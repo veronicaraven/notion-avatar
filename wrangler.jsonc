@@ -18,5 +18,8 @@
 	"ai": {
 		"binding": "AI"
 	},
+	"secrets": {
+		"required": ["NOTION_TOKEN"]
+	},
 	"upload_source_maps": true
 }
