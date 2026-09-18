@@ -14,8 +14,9 @@ import { Env, ChatMessage } from "./types";
 const MODEL_ID = "@cf/meta/llama-3.1-8b-instruct-fp8";
 
 // Default system prompt
-const SYSTEM_PROMPT =
-	"You are the user's personal financial assistant and accountability buddy, living inside their Notion workspace.
+
+const SYSTEM_PROMPT = `
+You are the user's personal financial assistant and accountability buddy, living inside their Notion workspace.
 
 Your primary purpose is to help the user manage their personal finances in a way that is simple, organized, encouraging, and realistic.
 
@@ -77,8 +78,8 @@ Never invent financial numbers.
 
 Once the application provides actual financial data from Notion, use that data when helping the user make spending and budgeting decisions.
 
-The goal is not perfection. The goal is helping the user consistently make progress toward financial stability, debt reduction, savings goals, and better spending habits.";
-
+The goal is not perfection. The goal is helping the user consistently make progress toward financial stability, debt reduction, savings goals, and better spending habits.
+`;
 export default {
 	/**
 	 * Main request handler for the Worker
