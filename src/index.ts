@@ -71,7 +71,7 @@ export default {
 			return env.ASSETS.fetch(request);
 		}
 
-		// Notion connection test
+		// Temporary Notion connection diagnostic
 		if (url.pathname === "/api/notion/test") {
 			if (request.method === "GET") {
 				return handleNotionTest(env);
@@ -141,16 +141,24 @@ async function handleChatRequest(
 }
 
 /**
- * Tests whether My Fin Avatar can access Notion.
+ * Temporarily checks whether Cloudflare has received the Notion secret.
+ * This does NOT expose the secret.
  */
 async function handleNotionTest(env: Env): Promise<Response> {
+	const token = env.NOTION_TOKEN;
+
+	const tokenInfo = {
+		hasToken: Boolean(token),
+		tokenLength: token?.length ?? 0,
+	};
+
 	try {
 		const response = await fetch(
 			"https://api.notion.com/v1/search",
 			{
 				method: "POST",
 				headers: {
-					"Authorization": `Bearer ${env.NOTION_TOKEN}`,
+					"Authorization": `Bearer ${token}`,
 					"Notion-Version": "2026-03-11",
 					"Content-Type": "application/json",
 				},
@@ -165,15 +173,21 @@ async function handleNotionTest(env: Env): Promise<Response> {
 		return new Response(
 			JSON.stringify(
 				{
-					success: response.ok,
-					status: response.status,
-					results: data,
+					tokenInfo,
+					notionResponse: {
+						success: response.ok,
+						status: response.status,
+						error:
+							response.ok
+								? null
+								: data,
+					},
 				},
 				null,
 				2,
 			),
 			{
-				status: response.ok ? 200 : response.status,
+				status: 200,
 				headers: {
 					"content-type": "application/json",
 				},
@@ -183,12 +197,19 @@ async function handleNotionTest(env: Env): Promise<Response> {
 		console.error("Notion API test failed:", error);
 
 		return new Response(
-			JSON.stringify({
-				success: false,
-				error: "Failed to connect to Notion",
-			}),
+			JSON.stringify(
+				{
+					tokenInfo,
+					notionResponse: {
+						success: false,
+						error: "Failed to connect to Notion",
+					},
+				},
+				null,
+				2,
+			),
 			{
-				status: 500,
+				status: 200,
 				headers: {
 					"content-type": "application/json",
 				},
