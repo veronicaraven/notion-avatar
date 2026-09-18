@@ -1,6 +1,3 @@
-/**
- * LLM Chat Application
- */
 import { Env, ChatMessage } from "./types";
 
 const MODEL_ID = "@cf/meta/llama-3.1-8b-instruct-fp8";
@@ -8,55 +5,46 @@ const MODEL_ID = "@cf/meta/llama-3.1-8b-instruct-fp8";
 const SYSTEM_PROMPT = `
 You are the user's personal financial assistant and accountability buddy, living inside their Notion workspace.
 
-Your primary purpose is to help the user manage their personal finances in a way that is simple, organized, encouraging, and realistic.
+Your primary job is to help the user:
+- Track spending
+- Understand income and expenses
+- Stay on top of bills
+- Pay down debt
+- Build savings
+- Stay consistent with their financial goals
+- Decide whether they can afford purchases
+- Understand their weekly and monthly spending
+- Organize their finances
 
-Your main responsibilities are:
-
-- Help the user keep track of what they are spending.
-- Help monitor weekly spending.
-- Help track income and expenses.
-- Help keep track of upcoming and recurring bills.
-- Help the user stay on top of due dates.
-- Help the user work toward paying down debt.
-- Help the user save for specific goals and purchases.
-- Help the user decide whether a purchase fits within their current budget.
-- Help the user understand how much money they have available to spend.
-- Help the user notice spending patterns and areas where they may be overspending.
-- Help the user stay accountable to the financial goals they have chosen.
-- Help break financial tasks into small, manageable steps.
-
-Be warm, supportive, encouraging, patient, and motivating.
-
-Never shame, guilt, criticize, or make the user feel bad about spending money or making a financial mistake.
-
-If the user's spending is higher than planned, calmly help them understand what happened and figure out what to do next.
-
-Celebrate progress, including small wins.
-
-Use occasional cute or friendly emojis, but don't overdo them.
-
-When the user feels overwhelmed, don't give them a huge list of things to do. Give them the most important next step first.
-
-When the user asks whether they can afford something, consider:
-- Available money
-- Upcoming bills
-- Weekly spending
-- Debt payments
-- Savings goals
-- Necessary expenses
-- The user's existing budget
-
-Explain the reasoning simply.
-
-If you don't have the information needed to determine whether a purchase fits their budget, ask for the missing information instead of guessing.
+Your personality:
+- Warm
+- Encouraging
+- Supportive
+- Practical
+- Never judgmental or shaming
+- Honest and realistic
+- Motivating without being pushy
 
 IMPORTANT:
-
 Once the application provides actual financial data from Notion, use that data when helping the user make spending and budgeting decisions.
 
 Never invent financial numbers.
 
-The goal is not perfection. The goal is helping the user consistently make progress toward financial stability, debt reduction, savings goals, and better spending habits.
+If financial data is unavailable, clearly say that you don't have the relevant data yet rather than making assumptions.
+
+When helping the user decide whether they can afford something, consider:
+- Available money
+- Upcoming bills
+- Recent spending
+- Weekly spending
+- Debt payments
+- Savings goals
+- Necessary expenses
+- Their budget
+
+When you have actual Notion data, use it instead of asking the user to manually provide information that is already available.
+
+The goal is to help the user make informed financial decisions while keeping the experience encouraging and easy to understand.
 `;
 
 export default {
@@ -67,149 +55,97 @@ export default {
 	): Promise<Response> {
 		const url = new URL(request.url);
 
-		if (url.pathname === "/" || !url.pathname.startsWith("/api/")) {
-			return env.ASSETS.fetch(request);
+		// Test Notion connection/database
+		if (url.pathname === "/api/notion/test" && request.method === "GET") {
+			return handleNotionTest(env);
 		}
 
-		// Temporary Notion connection diagnostic
-		if (url.pathname === "/api/notion/test") {
-			if (request.method === "GET") {
-				return handleNotionTest(env);
-			}
-
-			return new Response("Method not allowed", { status: 405 });
+		// Chat endpoint
+		if (url.pathname === "/api/chat" && request.method === "POST") {
+			return handleChat(request, env);
 		}
 
-		// Chat API
-		if (url.pathname === "/api/chat") {
-			if (request.method === "POST") {
-				return handleChatRequest(request, env);
-			}
-
-			return new Response("Method not allowed", { status: 405 });
-		}
-
-		return new Response("Not found", { status: 404 });
+		// Serve the website
+		return env.ASSETS.fetch(request);
 	},
-} satisfies ExportedHandler<Env>;
+};
 
-async function handleChatRequest(
+async function handleNotionTest(env: Env): Promise<Response> {
+	const databaseId = "90f9563c575183f791dd81c85e73133c";
+
+	const response = await fetch(
+		`https://api.notion.com/v1/databases/${databaseId}`,
+		{
+			method: "GET",
+			headers: {
+				Authorization: `Bearer ${env.NOTION_TOKEN}`,
+				"Notion-Version": "2026-03-11",
+				"Content-Type": "application/json",
+			},
+		},
+	);
+
+	const data = await response.json();
+
+	return new Response(
+		JSON.stringify(
+			{
+				success: response.ok,
+				status: response.status,
+				database: data,
+			},
+			null,
+			2,
+		),
+		{
+			status: response.status,
+			headers: {
+				"Content-Type": "application/json",
+			},
+		},
+	);
+}
+
+async function handleChat(
 	request: Request,
 	env: Env,
 ): Promise<Response> {
 	try {
-		const { messages = [] } = (await request.json()) as {
-			messages: ChatMessage[];
+		const body = (await request.json()) as {
+			messages?: ChatMessage[];
 		};
 
-		if (!messages.some((msg) => msg.role === "system")) {
-			messages.unshift({
+		const messages = body.messages ?? [];
+
+		const aiMessages: ChatMessage[] = [
+			{
 				role: "system",
 				content: SYSTEM_PROMPT,
-			});
-		}
+			},
+			...messages,
+		];
 
-		const inputs = {
-			messages,
-			max_tokens: 1024,
+		const stream = await env.AI.run(MODEL_ID, {
+			messages: aiMessages,
 			stream: true,
-		} satisfies AiTextGenerationInput & { stream: true };
+		});
 
-		const stream = await env.AI.run<typeof MODEL_ID>(
-			MODEL_ID,
-			inputs,
-		);
-
-		return new Response(stream, {
+		return new Response(stream as ReadableStream, {
 			headers: {
-				"content-type": "text/event-stream; charset=utf-8",
+				"content-type": "text/event-stream",
 				"cache-control": "no-cache",
-				connection: "keep-alive",
+				"connection": "keep-alive",
 			},
 		});
 	} catch (error) {
-		console.error("Error processing chat request:", error);
+		console.error("Chat error:", error);
 
 		return new Response(
-			JSON.stringify({ error: "Failed to process request" }),
+			JSON.stringify({
+				error: "Something went wrong while talking to the assistant.",
+			}),
 			{
 				status: 500,
-				headers: { "content-type": "application/json" },
-			},
-		);
-	}
-}
-
-/**
- * Temporarily checks whether Cloudflare has received the Notion secret.
- * This does NOT expose the secret.
- */
-async function handleNotionTest(env: Env): Promise<Response> {
-	const token = env.NOTION_TOKEN;
-
-	const tokenInfo = {
-		hasToken: Boolean(token),
-		tokenLength: token?.length ?? 0,
-	};
-
-	try {
-		const response = await fetch(
-			"https://api.notion.com/v1/search",
-			{
-				method: "POST",
-				headers: {
-					"Authorization": `Bearer ${token}`,
-					"Notion-Version": "2026-03-11",
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					page_size: 20,
-				}),
-			},
-		);
-
-		const data = await response.json();
-
-		return new Response(
-			JSON.stringify(
-				{
-					tokenInfo,
-					notionResponse: {
-						success: response.ok,
-						status: response.status,
-						error:
-							response.ok
-								? null
-								: data,
-					},
-				},
-				null,
-				2,
-			),
-			{
-				status: 200,
-				headers: {
-					"content-type": "application/json",
-				},
-			},
-		);
-	} catch (error) {
-		console.error("Notion API test failed:", error);
-
-		return new Response(
-			JSON.stringify(
-				{
-					tokenInfo,
-					notionResponse: {
-						success: false,
-						error: "Failed to connect to Notion",
-					},
-				},
-				null,
-				2,
-			),
-			{
-				status: 200,
 				headers: {
 					"content-type": "application/json",
 				},
