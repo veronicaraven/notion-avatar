@@ -12,6 +12,11 @@ export interface Env {
 	 * Binding for static assets.
 	 */
 	ASSETS: { fetch: (request: Request) => Promise<Response> };
+
+	/**
+	 * Secret containing the Notion integration token.
+	 */
+	NOTION_TOKEN: string;
 }
 
 /**
