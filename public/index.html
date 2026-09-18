@@ -3,18 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fin</title>
 
-  <title>My Notion Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=Zen+Maru+Gothic:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
 
   <style>
     :root {
-      --bg: #f7f3ee;
-      --card: #fffdf9;
-      --text: #2f2a26;
-      --muted: #8a8179;
-      --accent: #b98b73;
-      --accent-light: #eadbd0;
-      --border: #e6ddd5;
+      --sky-top: #9fd0e6;
+      --sky-bottom: #e4f3ee;
+      --paper: #fdfaf0;
+      --ink: #2b3a35;
+      --muted: #6b7f77;
+      --moss: #4f7a5a;
+      --moss-dark: #3d6247;
+      --meadow: #dcebc9;
+      --line: #d9e4d3;
+      --blush: #f6a9a0;
+
+      --font-body: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", ui-rounded,
+        "Nunito", system-ui, sans-serif;
+      --font-name: "Klee One", "Zen Maru Gothic", ui-rounded, serif;
     }
 
     * {
@@ -25,396 +38,423 @@
 
     body {
       min-height: 100vh;
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
-
+      font-family: var(--font-body);
+      color: var(--ink);
       background:
-        radial-gradient(circle at top left, #fffaf5, transparent 35%),
-        var(--bg);
-
-      color: var(--text);
-
+        radial-gradient(ellipse at 15% 0%, #f5f0d8 0%, transparent 45%),
+        radial-gradient(ellipse at 90% 100%, #cfe6d3 0%, transparent 50%),
+        #e9f2e6;
       display: flex;
       justify-content: center;
       align-items: center;
-
-      padding: 30px;
+      padding: 28px 16px;
     }
 
     .app {
       width: 100%;
-      max-width: 900px;
-      min-height: 650px;
-
-      background: var(--card);
-
-      border: 1px solid var(--border);
-      border-radius: 28px;
-
+      max-width: 760px;
+      background: var(--paper);
+      border-radius: 32px 32px 26px 26px;
+      overflow: hidden;
       box-shadow:
-        0 20px 60px rgba(80, 60, 45, 0.12);
-
+        0 0 0 4px #fff,
+        0 24px 60px rgba(63, 98, 71, 0.22);
       display: flex;
       flex-direction: column;
+    }
 
+    /* ---------- Scene ---------- */
+
+    .scene {
+      position: relative;
+      height: 320px;
+      background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
       overflow: hidden;
     }
 
-    /* Header */
-
-    header {
-      padding: 28px 32px;
-
-      display: flex;
-      align-items: center;
-      gap: 16px;
-
-      border-bottom: 1px solid var(--border);
+    .cloud {
+      position: absolute;
+      width: 110px;
+      height: 32px;
+      background: #fff;
+      border-radius: 40px;
+      opacity: 0.92;
+      animation: drift 90s linear infinite;
     }
-
-    .avatar-small {
-      width: 52px;
-      height: 52px;
-
+    .cloud::before,
+    .cloud::after {
+      content: "";
+      position: absolute;
+      background: #fff;
       border-radius: 50%;
+    }
+    .cloud::before { width: 50px; height: 50px; top: -24px; left: 16px; }
+    .cloud::after  { width: 40px; height: 40px; top: -16px; left: 58px; }
 
-      background: var(--accent-light);
+    .cloud.c1 { top: 70px;  animation-delay: -20s; }
+    .cloud.c2 { top: 130px; transform: scale(0.7); animation-duration: 120s; animation-delay: -75s; }
+    .cloud.c3 { top: 36px;  transform: scale(0.55); animation-duration: 150s; animation-delay: -40s; }
 
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      font-size: 28px;
+    @keyframes drift {
+      from { translate: -160px 0; }
+      to   { translate: 900px 0; }
     }
 
-    .header-text h1 {
-      font-size: 20px;
-      font-weight: 650;
+    .nameplate {
+      position: absolute;
+      top: 22px;
+      left: 28px;
     }
-
-    .header-text p {
-      color: var(--muted);
+    .nameplate h1 {
+      font-family: var(--font-name);
+      font-weight: 600;
+      font-size: 40px;
+      line-height: 1;
+      color: #fff;
+      text-shadow: 0 2px 0 rgba(63, 98, 71, 0.35);
+    }
+    .nameplate p {
+      margin-top: 6px;
       font-size: 13px;
-      margin-top: 3px;
+      font-weight: 500;
+      color: #2f5b6b;
     }
 
-    /* Avatar area */
-
-    .avatar-area {
-      padding: 35px 20px 20px;
-
-      text-align: center;
+    .hello {
+      position: absolute;
+      top: 78px;
+      left: 42%;
+      right: 6%;
+      background: #fff;
+      border-radius: 22px;
+      padding: 14px 18px;
+      font-size: 15px;
+      line-height: 1.55;
+      box-shadow: 0 6px 18px rgba(47, 91, 107, 0.16);
+    }
+    .hello::before {
+      content: "";
+      position: absolute;
+      left: -12px;
+      top: 42px;
+      border: 8px solid transparent;
+      border-right: 14px solid #fff;
     }
 
-    .avatar {
-      width: 150px;
-      height: 150px;
-
-      margin: 0 auto 15px;
-
-      border-radius: 50%;
-
-      background:
-        linear-gradient(
-          145deg,
-          #f1ded0,
-          #d8b9a5
-        );
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      font-size: 76px;
-
-      box-shadow:
-        0 12px 30px rgba(120, 90, 70, 0.18);
-
-      transition: transform 0.25s ease;
+    .hills {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 120px;
     }
 
-    .avatar:hover {
-      transform: translateY(-4px);
+    .fin {
+      position: absolute;
+      left: 6%;
+      bottom: 6px;
+      width: 210px;
+      height: 210px;
+    }
+    .fin svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
     }
 
-    .avatar-area h2 {
-      font-size: 22px;
-      margin-bottom: 5px;
+    /* ---------- Fin's moods ---------- */
+
+    .bob { animation: bob 4.2s ease-in-out infinite; }
+    @keyframes bob {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-6px); }
     }
 
-    .avatar-area p {
-      color: var(--muted);
-      font-size: 14px;
+    .eye,
+    .coin,
+    .mouth-open,
+    .leaf {
+      transform-box: fill-box;
+      transform-origin: center;
     }
 
-    /* Chat */
+    .eye { animation: blink 5.5s infinite; }
+    @keyframes blink {
+      0%, 94%, 100% { transform: scaleY(1); }
+      97%           { transform: scaleY(0.1); }
+    }
 
-    .chat-container {
-      flex: 1;
+    .leaf { transform-origin: 0% 100%; animation: sway 5s ease-in-out infinite; }
+    @keyframes sway {
+      0%, 100% { transform: rotate(-3deg); }
+      50%      { transform: rotate(4deg); }
+    }
 
+    .eyes { transition: transform 0.3s ease; }
+    .mouth-open { opacity: 0; }
+
+    .fin[data-state="thinking"] .eyes { transform: translate(4px, -5px); }
+    .fin[data-state="thinking"] .coin { animation: flip 1.1s ease-in-out infinite; }
+    @keyframes flip {
+      0%, 100% { transform: scaleX(1); }
+      50%      { transform: scaleX(-1); }
+    }
+
+    .fin[data-state="talking"] .mouth-smile { opacity: 0; }
+    .fin[data-state="talking"] .mouth-open  { animation: chat 0.3s ease-in-out infinite alternate; }
+    @keyframes chat {
+      from { opacity: 1; transform: scaleY(0.5); }
+      to   { opacity: 1; transform: scaleY(1.15); }
+    }
+
+    /* ---------- Chat ---------- */
+
+    .chat {
       display: flex;
       flex-direction: column;
-
-      margin: 10px 25px 25px;
-
-      border: 1px solid var(--border);
-      border-radius: 20px;
-
-      overflow: hidden;
+      padding: 18px 20px 20px;
+      gap: 12px;
     }
 
-    .chat-messages {
-      flex: 1;
-
-      min-height: 180px;
+    .messages {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 130px;
       max-height: 300px;
-
       overflow-y: auto;
-
-      padding: 20px;
-
-      background: #fcfaf7;
-
-      display: flex;
-      flex-direction: column;
+      padding: 4px 2px;
     }
 
     .message {
-      margin-bottom: 12px;
-
-      padding: 11px 15px;
-
-      border-radius: 16px;
-
-      max-width: 78%;
-
-      font-size: 14px;
-    }
-
-    .message p {
-      white-space: pre-line;
+      max-width: 80%;
+      padding: 10px 15px;
+      font-size: 15px;
+      line-height: 1.55;
       overflow-wrap: anywhere;
     }
-
-    .user-message {
-      background: var(--accent-light);
-
-      align-self: flex-end;
-
-      margin-left: auto;
-
-      border-bottom-right-radius: 5px;
-    }
+    .message p { white-space: pre-line; }
 
     .assistant-message {
-      background: white;
-
       align-self: flex-start;
-
-      border: 1px solid var(--border);
-
-      border-bottom-left-radius: 5px;
+      background: #fff;
+      border: 2px solid var(--line);
+      border-radius: 20px 20px 20px 6px;
     }
-
-    /* Thinking */
+    .user-message {
+      align-self: flex-end;
+      background: var(--meadow);
+      border-radius: 20px 20px 6px 20px;
+    }
 
     .typing-indicator {
       display: none;
-
-      padding: 8px 20px;
-
-      color: var(--muted);
-
       font-size: 13px;
+      color: var(--muted);
+      padding-left: 4px;
     }
+    .typing-indicator.visible { display: block; }
 
-    .typing-indicator.visible {
-      display: block;
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
+    .chips[hidden] { display: none; }
 
-    /* Input */
+    .chip {
+      font: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--moss-dark);
+      background: #fff;
+      border: 2px solid var(--line);
+      border-radius: 999px;
+      padding: 7px 14px;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .chip:hover { background: var(--meadow); border-color: #b9d3a3; }
 
     .message-input {
       display: flex;
-
       gap: 10px;
-
-      padding: 14px;
-
-      border-top: 1px solid var(--border);
-
-      background: white;
+      align-items: flex-end;
     }
 
     #user-input {
       flex: 1;
-
-      padding: 12px 14px;
-
-      border: 1px solid var(--border);
-
-      border-radius: 14px;
-
-      font-family: inherit;
-
-      font-size: 14px;
-
+      font: inherit;
+      font-size: 15px;
+      color: var(--ink);
+      background: #fff;
+      border: 2px solid var(--line);
+      border-radius: 18px;
+      padding: 12px 16px;
       resize: none;
-
-      outline: none;
+      max-height: 120px;
     }
-
-    #user-input:focus {
-      border-color: var(--accent);
-    }
+    #user-input::placeholder { color: #93a59d; }
 
     #send-button {
-      padding: 0 20px;
-
-      background: var(--accent);
-
-      color: white;
-
+      font: inherit;
+      font-weight: 700;
+      font-size: 15px;
+      color: #fff;
+      background: var(--moss);
       border: none;
-
-      border-radius: 14px;
-
+      border-radius: 18px;
+      padding: 13px 22px;
       cursor: pointer;
-
-      font-weight: 600;
-
-      transition: 0.2s;
+      transition: background 0.15s ease;
     }
+    #send-button:hover { background: var(--moss-dark); }
+    #send-button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    #send-button:hover {
-      transform: translateY(-1px);
-
-      filter: brightness(0.95);
-    }
-
-    #send-button:disabled {
-      opacity: 0.5;
-
-      cursor: not-allowed;
-
-      transform: none;
+    #user-input:focus-visible,
+    #send-button:focus-visible,
+    .chip:focus-visible {
+      outline: 3px solid #7fb98d;
+      outline-offset: 2px;
     }
 
     footer {
       text-align: center;
-
-      padding: 0 0 20px;
-
       font-size: 12px;
-
       color: var(--muted);
+      padding: 0 0 16px;
     }
 
+    /* ---------- Small screens ---------- */
+
     @media (max-width: 600px) {
-      body {
-        padding: 10px;
-      }
+      body { padding: 10px; }
+      .scene { height: 300px; }
+      .nameplate { left: 20px; }
+      .nameplate h1 { font-size: 34px; }
+      .fin { width: 150px; height: 150px; left: 3%; }
+      .hello { top: 82px; left: 40%; right: 4%; font-size: 13.5px; padding: 12px 14px; }
+      .chat { padding: 14px 14px 16px; }
+      .message { max-width: 88%; }
+    }
 
-      .app {
-        min-height: calc(100vh - 20px);
-
-        border-radius: 20px;
-      }
-
-      .avatar {
-        width: 120px;
-        height: 120px;
-        font-size: 60px;
-      }
-
-      .chat-container {
-        margin: 5px 12px 15px;
-      }
+    @media (prefers-reduced-motion: reduce) {
+      .cloud, .bob, .eye, .leaf,
+      .fin[data-state] .coin,
+      .fin[data-state] .mouth-open { animation: none; }
+      .eyes { transition: none; }
     }
   </style>
 </head>
 
 <body>
-
   <main class="app">
 
-    <header>
-      <div class="avatar-small">✨</div>
+    <section class="scene">
+      <div class="cloud c1"></div>
+      <div class="cloud c2"></div>
+      <div class="cloud c3"></div>
 
-      <div class="header-text">
-        <h1>My Notion Assistant</h1>
-        <p>Your personal little helper</p>
-      </div>
-    </header>
-
-
-    <section class="avatar-area">
-
-      <div class="avatar">
-        🧸
+      <div class="nameplate">
+        <h1>Fin</h1>
+        <p>keeper of your coins</p>
       </div>
 
-      <h2>Hi! I'm your assistant. ♡</h2>
+      <div class="hello">
+        Hi, I'm Fin! Ask me where your coins went, which bills are coming up, or whether that treat fits your budget.
+      </div>
 
-      <p>
-        Ask me about your tasks, school, money, calendar, or anything in your Notion.
-      </p>
+      <svg class="hills" viewBox="0 0 760 120" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 60 C120 20 240 30 360 58 C480 86 620 30 760 52 L760 120 L0 120 Z" fill="#b7d9a4" />
+        <path d="M0 82 C140 52 260 60 380 82 C500 104 640 66 760 78 L760 120 L0 120 Z" fill="#8fc07f" />
+        <path d="M0 102 C160 82 300 90 420 102 C540 114 660 92 760 100 L760 120 L0 120 Z" fill="#6fa36b" />
+        <g>
+          <circle cx="470" cy="100" r="3.5" fill="#fff8e1" />
+          <circle cx="492" cy="106" r="3" fill="#f6a9a0" />
+          <circle cx="620" cy="96" r="3.5" fill="#fff8e1" />
+          <circle cx="648" cy="104" r="3" fill="#fff8e1" />
+          <circle cx="700" cy="98" r="3" fill="#f6a9a0" />
+        </g>
+      </svg>
 
+      <div class="fin" id="fin" data-state="idle">
+        <svg viewBox="0 0 240 240" role="img"
+             aria-label="Fin, a round sea-green spirit with a leaf on its head, holding a gold coin">
+          <ellipse cx="120" cy="222" rx="66" ry="9" fill="#2b3a35" opacity="0.14" />
+
+          <g class="bob">
+            <!-- tail fin -->
+            <path d="M184 178 C210 168 226 182 218 200 C208 212 190 206 180 194 Z" fill="#6dbfb4" />
+            <!-- feet -->
+            <ellipse cx="92" cy="208" rx="20" ry="9" fill="#6dbfb4" />
+            <ellipse cx="148" cy="208" rx="20" ry="9" fill="#6dbfb4" />
+            <!-- body + belly -->
+            <path d="M120 44 C176 44 204 88 204 138 C204 184 172 212 120 212 C68 212 36 184 36 138 C36 88 64 44 120 44 Z" fill="#8ed1c6" />
+            <ellipse cx="120" cy="166" rx="54" ry="40" fill="#eaf8f1" />
+            <!-- head fin + leaf -->
+            <path d="M100 58 C94 30 116 14 136 30 C123 32 118 42 121 58 Z" fill="#6dbfb4" />
+            <g class="leaf">
+              <path d="M126 52 C124 30 144 18 168 22 C168 44 150 58 126 52 Z" fill="#9cc48b" />
+              <path d="M130 50 C140 42 150 34 162 28" stroke="#5e9a69" stroke-width="2" fill="none" stroke-linecap="round" />
+            </g>
+            <!-- left arm -->
+            <ellipse cx="40" cy="152" rx="13" ry="20" fill="#6dbfb4" transform="rotate(20 40 152)" />
+
+            <!-- face -->
+            <g class="eyes">
+              <g class="eye">
+                <ellipse cx="90" cy="112" rx="9" ry="12" fill="#2b3a35" />
+                <circle cx="93" cy="107" r="3.4" fill="#fff" />
+                <circle cx="87" cy="117" r="1.6" fill="#fff" />
+              </g>
+              <g class="eye">
+                <ellipse cx="150" cy="112" rx="9" ry="12" fill="#2b3a35" />
+                <circle cx="153" cy="107" r="3.4" fill="#fff" />
+                <circle cx="147" cy="117" r="1.6" fill="#fff" />
+              </g>
+            </g>
+            <ellipse cx="72" cy="134" rx="9" ry="6" fill="#f6a9a0" opacity="0.65" />
+            <ellipse cx="168" cy="134" rx="9" ry="6" fill="#f6a9a0" opacity="0.65" />
+            <path class="mouth-smile" d="M108 132 Q120 145 132 132" stroke="#2b3a35" stroke-width="3" fill="none" stroke-linecap="round" />
+            <ellipse class="mouth-open" cx="120" cy="137" rx="8" ry="7" fill="#c4574f" />
+
+            <!-- right arm, coin, hand -->
+            <ellipse cx="200" cy="150" rx="13" ry="20" fill="#6dbfb4" transform="rotate(-20 200 150)" />
+            <g class="coin">
+              <circle cx="212" cy="116" r="19" fill="#f2c14e" />
+              <circle cx="212" cy="116" r="14" fill="none" stroke="#d99a1f" stroke-width="2.5" />
+              <path d="M212 106 C213 112 216 114 221 116 C216 118 213 120 212 126 C211 120 208 118 203 116 C208 114 211 112 212 106 Z" fill="#fff3c4" />
+            </g>
+            <ellipse cx="208" cy="136" rx="10" ry="7" fill="#6dbfb4" />
+          </g>
+        </svg>
+      </div>
     </section>
 
-
-    <div class="chat-container">
-
-      <div id="chat-messages" class="chat-messages">
-
+    <section class="chat">
+      <div id="chat-messages" class="messages" aria-live="polite">
         <div class="message assistant-message">
-          <p>
-            Hi! I'm ready to help. ✨
-            
-            Eventually, I'll be able to read and update your Notion databases for you.
-          </p>
+          <p>I've got your Expenses notebook open. What shall we look at first?</p>
         </div>
-
       </div>
 
+      <div class="typing-indicator" id="typing-indicator">Fin is counting coins...</div>
 
-      <div
-        class="typing-indicator"
-        id="typing-indicator"
-      >
-        Thinking... ✨
+      <div class="chips" id="chips">
+        <button class="chip" type="button" data-q="How much have I spent this week?">How much have I spent this week?</button>
+        <button class="chip" type="button" data-q="What are my biggest expenses lately?">My biggest expenses</button>
+        <button class="chip" type="button" data-q="Can I afford a $40 treat today?">Can I afford a $40 treat?</button>
       </div>
-
 
       <div class="message-input">
-
-        <textarea
-          id="user-input"
-          placeholder="Talk to me..."
-          rows="1"
-          autofocus
-        ></textarea>
-
-        <button id="send-button">
-          Send
-        </button>
-
+        <textarea id="user-input" placeholder="Ask Fin about your money..." rows="1" autofocus></textarea>
+        <button id="send-button" type="button">Ask</button>
       </div>
+    </section>
 
-    </div>
-
-
-    <footer>
-      Personal Notion Assistant
-    </footer>
-
+    <footer>Fin keeps watch over your Notion coins</footer>
   </main>
 
-
   <script src="chat.js"></script>
-
 </body>
 </html>
