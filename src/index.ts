@@ -1,19 +1,9 @@
 /**
- * LLM Chat Application Template
- *
- * A simple chat application using Cloudflare Workers AI.
- * This template demonstrates how to implement an LLM-powered chat interface with
- * streaming responses using Server-Sent Events (SSE).
- *
- * @license MIT
+ * LLM Chat Application
  */
 import { Env, ChatMessage } from "./types";
 
-// Model ID for Workers AI model
-// https://developers.cloudflare.com/workers-ai/models/
 const MODEL_ID = "@cf/meta/llama-3.1-8b-instruct-fp8";
-
-// Default system prompt
 
 const SYSTEM_PROMPT = `
 You are the user's personal financial assistant and accountability buddy, living inside their Notion workspace.
@@ -35,10 +25,6 @@ Your main responsibilities are:
 - Help the user stay accountable to the financial goals they have chosen.
 - Help break financial tasks into small, manageable steps.
 
-The user can sometimes struggle with staying organized and consistent with finances. Be especially helpful by reducing overwhelm, keeping information simple, and turning large financial tasks into small actionable steps.
-
-PERSONALITY:
-
 Be warm, supportive, encouraging, patient, and motivating.
 
 Never shame, guilt, criticize, or make the user feel bad about spending money or making a financial mistake.
@@ -51,11 +37,7 @@ Use occasional cute or friendly emojis, but don't overdo them.
 
 When the user feels overwhelmed, don't give them a huge list of things to do. Give them the most important next step first.
 
-PURCHASE DECISIONS:
-
-When the user asks whether they can afford something, don't simply answer yes or no without considering their financial situation.
-
-Consider factors such as:
+When the user asks whether they can afford something, consider:
 - Available money
 - Upcoming bills
 - Weekly spending
@@ -70,20 +52,14 @@ If you don't have the information needed to determine whether a purchase fits th
 
 IMPORTANT:
 
-You do not currently have access to the user's Notion databases.
-
-Never claim that you read, created, changed, deleted, or tracked anything in Notion unless the application actually provides you with that information.
+Once the application provides actual financial data from Notion, use that data when helping the user make spending and budgeting decisions.
 
 Never invent financial numbers.
 
-Once the application provides actual financial data from Notion, use that data when helping the user make spending and budgeting decisions.
-
 The goal is not perfection. The goal is helping the user consistently make progress toward financial stability, debt reduction, savings goals, and better spending habits.
 `;
+
 export default {
-	/**
-	 * Main request handler for the Worker
-	 */
 	async fetch(
 		request: Request,
 		env: Env,
@@ -91,43 +67,46 @@ export default {
 	): Promise<Response> {
 		const url = new URL(request.url);
 
-		// Handle static assets (frontend)
 		if (url.pathname === "/" || !url.pathname.startsWith("/api/")) {
 			return env.ASSETS.fetch(request);
 		}
 
-		// API Routes
+		// Notion connection test
+		if (url.pathname === "/api/notion/test") {
+			if (request.method === "GET") {
+				return handleNotionTest(env);
+			}
+
+			return new Response("Method not allowed", { status: 405 });
+		}
+
+		// Chat API
 		if (url.pathname === "/api/chat") {
-			// Handle POST requests for chat
 			if (request.method === "POST") {
 				return handleChatRequest(request, env);
 			}
 
-			// Method not allowed for other request types
 			return new Response("Method not allowed", { status: 405 });
 		}
 
-		// Handle 404 for unmatched routes
 		return new Response("Not found", { status: 404 });
 	},
 } satisfies ExportedHandler<Env>;
 
-/**
- * Handles chat API requests
- */
 async function handleChatRequest(
 	request: Request,
 	env: Env,
 ): Promise<Response> {
 	try {
-		// Parse JSON request body
 		const { messages = [] } = (await request.json()) as {
 			messages: ChatMessage[];
 		};
 
-		// Add system prompt if not present
 		if (!messages.some((msg) => msg.role === "system")) {
-			messages.unshift({ role: "system", content: SYSTEM_PROMPT });
+			messages.unshift({
+				role: "system",
+				content: SYSTEM_PROMPT,
+			});
 		}
 
 		const inputs = {
@@ -136,14 +115,10 @@ async function handleChatRequest(
 			stream: true,
 		} satisfies AiTextGenerationInput & { stream: true };
 
-		const stream = await env.AI.run<typeof MODEL_ID>(MODEL_ID, inputs, {
-			// Uncomment to use AI Gateway
-			// gateway: {
-			//   id: "YOUR_GATEWAY_ID", // Replace with your AI Gateway ID
-			//   skipCache: false,      // Set to true to bypass cache
-			//   cacheTtl: 3600,        // Cache time-to-live in seconds
-			// },
-		});
+		const stream = await env.AI.run<typeof MODEL_ID>(
+			MODEL_ID,
+			inputs,
+		);
 
 		return new Response(stream, {
 			headers: {
@@ -154,11 +129,69 @@ async function handleChatRequest(
 		});
 	} catch (error) {
 		console.error("Error processing chat request:", error);
+
 		return new Response(
 			JSON.stringify({ error: "Failed to process request" }),
 			{
 				status: 500,
 				headers: { "content-type": "application/json" },
+			},
+		);
+	}
+}
+
+/**
+ * Tests whether My Fin Avatar can access Notion.
+ */
+async function handleNotionTest(env: Env): Promise<Response> {
+	try {
+		const response = await fetch(
+			"https://api.notion.com/v1/search",
+			{
+				method: "POST",
+				headers: {
+					"Authorization": `Bearer ${env.NOTION_TOKEN}`,
+					"Notion-Version": "2026-03-11",
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					page_size: 20,
+				}),
+			},
+		);
+
+		const data = await response.json();
+
+		return new Response(
+			JSON.stringify(
+				{
+					success: response.ok,
+					status: response.status,
+					results: data,
+				},
+				null,
+				2,
+			),
+			{
+				status: response.ok ? 200 : response.status,
+				headers: {
+					"content-type": "application/json",
+				},
+			},
+		);
+	} catch (error) {
+		console.error("Notion API test failed:", error);
+
+		return new Response(
+			JSON.stringify({
+				success: false,
+				error: "Failed to connect to Notion",
+			}),
+			{
+				status: 500,
+				headers: {
+					"content-type": "application/json",
+				},
 			},
 		);
 	}
