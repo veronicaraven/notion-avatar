@@ -18,7 +18,7 @@ let chatHistory = [
 	{
 		role: "assistant",
 		content:
-			"I've got your Expenses notebook open. What shall we look at first?",
+			"Boo! Your planner is open. Tell me what you buy or earn and I'll log it, or tell me about something big you're saving for.",
 	},
 ];
 let isProcessing = false;
@@ -77,7 +77,10 @@ async function sendMessage() {
 		const response = await fetch("/api/chat", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ messages: chatHistory }),
+			body: JSON.stringify({
+				messages: chatHistory,
+				timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+			}),
 		});
 
 		if (!response.ok) throw new Error("Failed to get response");
@@ -129,7 +132,7 @@ async function sendMessage() {
 		console.error("Error:", error);
 		addMessageToChat(
 			"assistant",
-			"Oh no, the wind blew my notes away. Could you ask me again?",
+			"Oh no, a gust of spooky wind blew my notes away. Could you say that again?",
 		);
 	} finally {
 		typingIndicator.classList.remove("visible");

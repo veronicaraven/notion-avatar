@@ -8,42 +8,41 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=Zen+Maru+Gothic:wght@400;500;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Griffy&family=Zen+Maru+Gothic:wght@400;500;700&display=swap"
     rel="stylesheet"
   />
 
   <style>
     :root {
-      --sky-top: #9fd0e6;
-      --sky-bottom: #e4f3ee;
-      --paper: #fdfaf0;
-      --ink: #2b3a35;
-      --muted: #6b7f77;
-      --moss: #4f7a5a;
-      --moss-dark: #3d6247;
-      --meadow: #dcebc9;
-      --line: #d9e4d3;
-      --blush: #f6a9a0;
+      --night-top: #170d33;
+      --night-bottom: #4b2a72;
+      --moon: #fff1c1;
+      --pumpkin: #f59a2e;
+      --pumpkin-bright: #ffb04d;
+      --pumpkin-deep: #c9701a;
+      --plum: #241638;
+      --plum-2: #2f1f4a;
+      --plum-3: #1a0f2e;
+      --line: #4a3570;
+      --text: #f4ecff;
+      --muted: #b9a8d8;
+      --ink: #2a1a3a;
+      --slime: #9be37a;
 
-      --font-body: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", ui-rounded,
-        "Nunito", system-ui, sans-serif;
-      --font-name: "Klee One", "Zen Maru Gothic", ui-rounded, serif;
+      --font-body: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", ui-rounded, "Nunito", system-ui, sans-serif;
+      --font-name: "Griffy", "Zen Maru Gothic", ui-rounded, cursive;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       min-height: 100vh;
       font-family: var(--font-body);
-      color: var(--ink);
+      color: var(--text);
       background:
-        radial-gradient(ellipse at 15% 0%, #f5f0d8 0%, transparent 45%),
-        radial-gradient(ellipse at 90% 100%, #cfe6d3 0%, transparent 50%),
-        #e9f2e6;
+        radial-gradient(ellipse at 20% 0%, #3a1f63 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 100%, #2b1550 0%, transparent 55%),
+        #0f0820;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -52,13 +51,12 @@
 
     .app {
       width: 100%;
-      max-width: 760px;
-      background: var(--paper);
-      border-radius: 32px 32px 26px 26px;
+      max-width: 780px;
+      background: var(--plum);
+      border-radius: 32px;
       overflow: hidden;
-      box-shadow:
-        0 0 0 4px #fff,
-        0 24px 60px rgba(63, 98, 71, 0.22);
+      border: 2px solid var(--line);
+      box-shadow: 0 0 0 4px #150a2a, 0 26px 70px rgba(120, 60, 200, 0.35);
       display: flex;
       flex-direction: column;
     }
@@ -67,78 +65,116 @@
 
     .scene {
       position: relative;
-      height: 320px;
-      background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
+      height: 350px;
+      background: linear-gradient(180deg, var(--night-top) 0%, #38205f 55%, var(--night-bottom) 100%);
       overflow: hidden;
     }
 
-    .cloud {
+    .star {
       position: absolute;
-      width: 110px;
-      height: 32px;
-      background: #fff;
-      border-radius: 40px;
-      opacity: 0.92;
-      animation: drift 90s linear infinite;
-    }
-    .cloud::before,
-    .cloud::after {
-      content: "";
-      position: absolute;
-      background: #fff;
+      width: 3px;
+      height: 3px;
       border-radius: 50%;
+      background: #fff8dc;
+      opacity: 0.8;
+      animation: twinkle 4s ease-in-out infinite;
     }
-    .cloud::before { width: 50px; height: 50px; top: -24px; left: 16px; }
-    .cloud::after  { width: 40px; height: 40px; top: -16px; left: 58px; }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.85; }
+      50%      { opacity: 0.25; }
+    }
 
-    .cloud.c1 { top: 70px;  animation-delay: -20s; }
-    .cloud.c2 { top: 130px; transform: scale(0.7); animation-duration: 120s; animation-delay: -75s; }
-    .cloud.c3 { top: 36px;  transform: scale(0.55); animation-duration: 150s; animation-delay: -40s; }
+    .moon {
+      position: absolute;
+      top: 18px;
+      right: 9%;
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 30% 35%, rgba(214, 190, 120, 0.55) 0 7px, transparent 8px),
+        radial-gradient(circle at 62% 60%, rgba(214, 190, 120, 0.5) 0 10px, transparent 11px),
+        radial-gradient(circle at 55% 22%, rgba(214, 190, 120, 0.4) 0 5px, transparent 6px),
+        radial-gradient(circle at 40% 40%, #fffbe6, var(--moon) 70%, #f0d98a);
+      box-shadow: 0 0 40px 10px rgba(255, 241, 193, 0.35), 0 0 110px 30px rgba(255, 241, 193, 0.14);
+    }
 
-    @keyframes drift {
-      from { translate: -160px 0; }
-      to   { translate: 900px 0; }
+    .bat {
+      position: absolute;
+      width: 34px;
+      height: 20px;
+      fill: #0d0620;
+      animation: fly 26s linear infinite;
+    }
+    .bat svg { width: 100%; height: 100%; animation: flap 0.5s ease-in-out infinite alternate; transform-origin: center; }
+    .bat.b1 { top: 44px; animation-delay: -6s; }
+    .bat.b2 { top: 96px; width: 24px; height: 14px; animation-duration: 34s; animation-delay: -22s; }
+    .bat.b3 { top: 70px; width: 28px; height: 16px; animation-duration: 40s; animation-delay: -12s; }
+    @keyframes fly {
+      from { translate: -60px 0; }
+      to   { translate: 900px 30px; }
+    }
+    @keyframes flap {
+      from { transform: scaleY(1); }
+      to   { transform: scaleY(0.45); }
+    }
+
+    .fog {
+      position: absolute;
+      left: -10%;
+      width: 60%;
+      height: 46px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(200, 180, 240, 0.22), transparent 70%);
+      animation: fogdrift 40s ease-in-out infinite alternate;
+    }
+    .fog.f1 { bottom: 60px; }
+    .fog.f2 { bottom: 96px; left: 40%; animation-duration: 55s; }
+    @keyframes fogdrift {
+      from { translate: -30px 0; }
+      to   { translate: 60px 0; }
     }
 
     .nameplate {
       position: absolute;
-      top: 22px;
+      top: 20px;
       left: 28px;
     }
     .nameplate h1 {
       font-family: var(--font-name);
-      font-weight: 600;
-      font-size: 40px;
+      font-weight: 400;
+      font-size: 48px;
       line-height: 1;
-      color: #fff;
-      text-shadow: 0 2px 0 rgba(63, 98, 71, 0.35);
+      color: var(--pumpkin);
+      text-shadow: 0 0 18px rgba(245, 154, 46, 0.55), 0 3px 0 #6a3208;
     }
     .nameplate p {
       margin-top: 6px;
       font-size: 13px;
       font-weight: 500;
-      color: #2f5b6b;
+      color: #cdbcee;
     }
 
     .hello {
       position: absolute;
-      top: 78px;
-      left: 42%;
-      right: 6%;
-      background: #fff;
+      top: 108px;
+      left: 43%;
+      right: 5%;
+      background: #fff2d9;
+      color: var(--ink);
       border-radius: 22px;
-      padding: 14px 18px;
-      font-size: 15px;
+      padding: 13px 18px;
+      font-size: 14.5px;
       line-height: 1.55;
-      box-shadow: 0 6px 18px rgba(47, 91, 107, 0.16);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
     }
     .hello::before {
       content: "";
       position: absolute;
       left: -12px;
-      top: 42px;
+      top: 46px;
       border: 8px solid transparent;
-      border-right: 14px solid #fff;
+      border-right: 14px solid #fff2d9;
     }
 
     .hills {
@@ -146,21 +182,39 @@
       left: 0;
       bottom: 0;
       width: 100%;
-      height: 120px;
+      height: 130px;
+    }
+
+    .house {
+      position: absolute;
+      right: 3%;
+      bottom: 58px;
+      width: 150px;
+      height: 130px;
+    }
+
+    .pumpkin {
+      position: absolute;
+      bottom: 10px;
+      filter: drop-shadow(0 0 8px rgba(245, 154, 46, 0.6));
+      animation: flicker 3.4s ease-in-out infinite;
+    }
+    .pumpkin.p1 { right: 30%; width: 54px; }
+    .pumpkin.p2 { right: 22%; width: 38px; bottom: 6px; animation-delay: -1.2s; }
+    .pumpkin.p3 { right: 5%; width: 62px; animation-delay: -2.1s; }
+    @keyframes flicker {
+      0%, 100% { filter: drop-shadow(0 0 9px rgba(245, 154, 46, 0.65)); }
+      45%      { filter: drop-shadow(0 0 4px rgba(245, 154, 46, 0.35)); }
     }
 
     .fin {
       position: absolute;
-      left: 6%;
-      bottom: 6px;
-      width: 210px;
-      height: 210px;
+      left: 5%;
+      bottom: 4px;
+      width: 220px;
+      height: 220px;
     }
-    .fin svg {
-      width: 100%;
-      height: 100%;
-      overflow: visible;
-    }
+    .fin svg { width: 100%; height: 100%; overflow: visible; }
 
     /* ---------- Fin's moods ---------- */
 
@@ -170,24 +224,20 @@
       50%      { transform: translateY(-6px); }
     }
 
-    .eye,
-    .coin,
-    .mouth-open,
-    .leaf {
+    .eye, .coin, .mouth-open, .hat {
       transform-box: fill-box;
       transform-origin: center;
     }
-
     .eye { animation: blink 5.5s infinite; }
     @keyframes blink {
       0%, 94%, 100% { transform: scaleY(1); }
       97%           { transform: scaleY(0.1); }
     }
 
-    .leaf { transform-origin: 0% 100%; animation: sway 5s ease-in-out infinite; }
-    @keyframes sway {
-      0%, 100% { transform: rotate(-3deg); }
-      50%      { transform: rotate(4deg); }
+    .hat { transform-origin: 50% 100%; animation: hatsway 5s ease-in-out infinite; }
+    @keyframes hatsway {
+      0%, 100% { transform: rotate(-2deg); }
+      50%      { transform: rotate(2.5deg); }
     }
 
     .eyes { transition: transform 0.3s ease; }
@@ -214,6 +264,7 @@
       flex-direction: column;
       padding: 18px 20px 20px;
       gap: 12px;
+      background: var(--plum);
     }
 
     .messages {
@@ -221,13 +272,13 @@
       flex-direction: column;
       gap: 10px;
       min-height: 130px;
-      max-height: 300px;
+      max-height: 320px;
       overflow-y: auto;
       padding: 4px 2px;
     }
 
     .message {
-      max-width: 80%;
+      max-width: 82%;
       padding: 10px 15px;
       font-size: 15px;
       line-height: 1.55;
@@ -237,13 +288,15 @@
 
     .assistant-message {
       align-self: flex-start;
-      background: #fff;
+      background: var(--plum-2);
       border: 2px solid var(--line);
       border-radius: 20px 20px 20px 6px;
     }
     .user-message {
       align-self: flex-end;
-      background: var(--meadow);
+      background: var(--pumpkin);
+      color: #2a1400;
+      font-weight: 500;
       border-radius: 20px 20px 6px 20px;
     }
 
@@ -255,66 +308,58 @@
     }
     .typing-indicator.visible { display: block; }
 
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
     .chips[hidden] { display: none; }
 
     .chip {
       font: inherit;
       font-size: 13px;
       font-weight: 500;
-      color: var(--moss-dark);
-      background: #fff;
-      border: 2px solid var(--line);
+      color: #ffd9a3;
+      background: transparent;
+      border: 2px solid rgba(245, 154, 46, 0.55);
       border-radius: 999px;
       padding: 7px 14px;
       cursor: pointer;
       transition: background 0.15s ease, border-color 0.15s ease;
     }
-    .chip:hover { background: var(--meadow); border-color: #b9d3a3; }
+    .chip:hover { background: rgba(245, 154, 46, 0.16); border-color: var(--pumpkin); }
 
-    .message-input {
-      display: flex;
-      gap: 10px;
-      align-items: flex-end;
-    }
+    .message-input { display: flex; gap: 10px; align-items: flex-end; }
 
     #user-input {
       flex: 1;
       font: inherit;
       font-size: 15px;
-      color: var(--ink);
-      background: #fff;
+      color: var(--text);
+      background: var(--plum-3);
       border: 2px solid var(--line);
       border-radius: 18px;
       padding: 12px 16px;
       resize: none;
       max-height: 120px;
     }
-    #user-input::placeholder { color: #93a59d; }
+    #user-input::placeholder { color: #8e7db3; }
 
     #send-button {
       font: inherit;
       font-weight: 700;
       font-size: 15px;
-      color: #fff;
-      background: var(--moss);
+      color: #2a1400;
+      background: var(--pumpkin);
       border: none;
       border-radius: 18px;
       padding: 13px 22px;
       cursor: pointer;
       transition: background 0.15s ease;
     }
-    #send-button:hover { background: var(--moss-dark); }
+    #send-button:hover { background: var(--pumpkin-bright); }
     #send-button:disabled { opacity: 0.5; cursor: not-allowed; }
 
     #user-input:focus-visible,
     #send-button:focus-visible,
     .chip:focus-visible {
-      outline: 3px solid #7fb98d;
+      outline: 3px solid var(--slime);
       outline-offset: 2px;
     }
 
@@ -323,23 +368,27 @@
       font-size: 12px;
       color: var(--muted);
       padding: 0 0 16px;
+      background: var(--plum);
     }
 
     /* ---------- Small screens ---------- */
 
     @media (max-width: 600px) {
       body { padding: 10px; }
-      .scene { height: 300px; }
+      .scene { height: 330px; }
       .nameplate { left: 20px; }
-      .nameplate h1 { font-size: 34px; }
-      .fin { width: 150px; height: 150px; left: 3%; }
-      .hello { top: 82px; left: 40%; right: 4%; font-size: 13.5px; padding: 12px 14px; }
+      .nameplate h1 { font-size: 40px; }
+      .moon { width: 56px; height: 56px; right: 6%; }
+      .fin { width: 150px; height: 150px; left: 2%; }
+      .hello { top: 104px; left: 40%; right: 4%; font-size: 13px; padding: 11px 14px; }
+      .house { width: 100px; height: 88px; bottom: 44px; }
+      .pumpkin.p3 { width: 44px; }
       .chat { padding: 14px 14px 16px; }
-      .message { max-width: 88%; }
+      .message { max-width: 90%; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .cloud, .bob, .eye, .leaf,
+      .star, .bat, .bat svg, .fog, .pumpkin, .bob, .eye, .hat,
       .fin[data-state] .coin,
       .fin[data-state] .mouth-open { animation: none; }
       .eyes { transition: none; }
@@ -351,36 +400,78 @@
   <main class="app">
 
     <section class="scene">
-      <div class="cloud c1"></div>
-      <div class="cloud c2"></div>
-      <div class="cloud c3"></div>
+      <span class="star" style="top: 14px; left: 34%"></span>
+      <span class="star" style="top: 40px; left: 52%; animation-delay: -1s"></span>
+      <span class="star" style="top: 24px; left: 68%; animation-delay: -2s"></span>
+      <span class="star" style="top: 70px; left: 24%; animation-delay: -3s"></span>
+      <span class="star" style="top: 88px; left: 60%; animation-delay: -1.5s"></span>
+      <span class="star" style="top: 12px; left: 84%; animation-delay: -2.5s"></span>
+      <span class="star" style="top: 60px; left: 90%; animation-delay: -0.5s"></span>
+
+      <div class="moon"></div>
+
+      <div class="bat b1"><svg viewBox="0 0 30 16" aria-hidden="true"><path d="M0 8 C6 -2 10 2 15 8 C20 2 24 -2 30 8 C26 6 22 10 15 15 C8 10 4 6 0 8 Z"/></svg></div>
+      <div class="bat b2"><svg viewBox="0 0 30 16" aria-hidden="true"><path d="M0 8 C6 -2 10 2 15 8 C20 2 24 -2 30 8 C26 6 22 10 15 15 C8 10 4 6 0 8 Z"/></svg></div>
+      <div class="bat b3"><svg viewBox="0 0 30 16" aria-hidden="true"><path d="M0 8 C6 -2 10 2 15 8 C20 2 24 -2 30 8 C26 6 22 10 15 15 C8 10 4 6 0 8 Z"/></svg></div>
 
       <div class="nameplate">
         <h1>Fin</h1>
-        <p>keeper of your coins</p>
+        <p>keeper of your coins (and candy)</p>
       </div>
 
       <div class="hello">
-        Hi, I'm Fin! Ask me where your coins went, which bills are coming up, or whether that treat fits your budget.
+        Boo! I'm Fin. Tell me what you buy and I'll write it down. Tell me about big plans, like concert tickets, and I'll fit them into your week.
       </div>
 
-      <svg class="hills" viewBox="0 0 760 120" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M0 60 C120 20 240 30 360 58 C480 86 620 30 760 52 L760 120 L0 120 Z" fill="#b7d9a4" />
-        <path d="M0 82 C140 52 260 60 380 82 C500 104 640 66 760 78 L760 120 L0 120 Z" fill="#8fc07f" />
-        <path d="M0 102 C160 82 300 90 420 102 C540 114 660 92 760 100 L760 120 L0 120 Z" fill="#6fa36b" />
-        <g>
-          <circle cx="470" cy="100" r="3.5" fill="#fff8e1" />
-          <circle cx="492" cy="106" r="3" fill="#f6a9a0" />
-          <circle cx="620" cy="96" r="3.5" fill="#fff8e1" />
-          <circle cx="648" cy="104" r="3" fill="#fff8e1" />
-          <circle cx="700" cy="98" r="3" fill="#f6a9a0" />
+      <svg class="hills" viewBox="0 0 760 130" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 62 C120 24 240 34 360 60 C480 86 620 30 760 54 L760 130 L0 130 Z" fill="#33205a" />
+        <path d="M0 88 C140 58 260 66 380 88 C500 108 640 72 760 84 L760 130 L0 130 Z" fill="#241542" />
+        <path d="M0 110 C160 92 300 98 420 110 C540 120 660 100 760 108 L760 130 L0 130 Z" fill="#170d2d" />
+      </svg>
+
+      <svg class="house" viewBox="0 0 150 130" aria-hidden="true">
+        <g fill="#120a26">
+          <rect x="30" y="62" width="90" height="62" />
+          <path d="M22 64 L75 26 L128 64 Z" />
+          <rect x="100" y="30" width="20" height="44" />
+          <path d="M96 32 L110 8 L124 32 Z" />
+          <rect x="18" y="82" width="14" height="42" />
         </g>
+        <g fill="#f59a2e">
+          <rect x="44" y="76" width="14" height="18" rx="7" />
+          <rect x="92" y="76" width="14" height="18" rx="7" />
+          <rect x="105" y="42" width="10" height="14" rx="5" />
+          <rect x="66" y="98" width="18" height="26" rx="9" opacity="0.85" />
+        </g>
+      </svg>
+
+      <div class="fog f1"></div>
+      <div class="fog f2"></div>
+
+      <svg class="pumpkin p1" viewBox="0 0 60 54" aria-hidden="true">
+        <path d="M28 10 C28 3 34 2 36 7" stroke="#5c8f3a" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <ellipse cx="30" cy="32" rx="26" ry="20" fill="#f59a2e"/>
+        <path d="M30 12 C21 20 21 44 30 52 M30 12 C39 20 39 44 30 52" stroke="#c9701a" stroke-width="2.5" fill="none"/>
+        <path d="M16 29 L23 23 L24 31 Z M44 29 L37 23 L36 31 Z" fill="#3a1b05"/>
+        <path d="M18 38 Q30 49 42 38 L38 37 L34 41 L30 37 L26 41 L22 37 Z" fill="#3a1b05"/>
+      </svg>
+      <svg class="pumpkin p2" viewBox="0 0 60 54" aria-hidden="true">
+        <path d="M28 10 C28 3 34 2 36 7" stroke="#5c8f3a" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <ellipse cx="30" cy="32" rx="26" ry="20" fill="#e8862a"/>
+        <path d="M30 12 C21 20 21 44 30 52 M30 12 C39 20 39 44 30 52" stroke="#b8621a" stroke-width="2.5" fill="none"/>
+      </svg>
+      <svg class="pumpkin p3" viewBox="0 0 60 54" aria-hidden="true">
+        <path d="M28 10 C28 3 34 2 36 7" stroke="#5c8f3a" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <ellipse cx="30" cy="32" rx="26" ry="20" fill="#f59a2e"/>
+        <path d="M30 12 C21 20 21 44 30 52 M30 12 C39 20 39 44 30 52" stroke="#c9701a" stroke-width="2.5" fill="none"/>
+        <circle cx="21" cy="29" r="4" fill="#3a1b05"/><circle cx="39" cy="29" r="4" fill="#3a1b05"/>
+        <path d="M20 39 Q30 46 40 39" stroke="#3a1b05" stroke-width="3" fill="none" stroke-linecap="round"/>
       </svg>
 
       <div class="fin" id="fin" data-state="idle">
         <svg viewBox="0 0 240 240" role="img"
-             aria-label="Fin, a round sea-green spirit with a leaf on its head, holding a gold coin">
-          <ellipse cx="120" cy="222" rx="66" ry="9" fill="#2b3a35" opacity="0.14" />
+             aria-label="Fin, a round sea-green spirit in a purple witch hat, holding a gold coin">
+          <ellipse cx="120" cy="222" rx="66" ry="9" fill="#000" opacity="0.35" />
 
           <g class="bob">
             <!-- tail fin -->
@@ -391,32 +482,35 @@
             <!-- body + belly -->
             <path d="M120 44 C176 44 204 88 204 138 C204 184 172 212 120 212 C68 212 36 184 36 138 C36 88 64 44 120 44 Z" fill="#8ed1c6" />
             <ellipse cx="120" cy="166" rx="54" ry="40" fill="#eaf8f1" />
-            <!-- head fin + leaf -->
-            <path d="M100 58 C94 30 116 14 136 30 C123 32 118 42 121 58 Z" fill="#6dbfb4" />
-            <g class="leaf">
-              <path d="M126 52 C124 30 144 18 168 22 C168 44 150 58 126 52 Z" fill="#9cc48b" />
-              <path d="M130 50 C140 42 150 34 162 28" stroke="#5e9a69" stroke-width="2" fill="none" stroke-linecap="round" />
+
+            <!-- witch hat -->
+            <g class="hat">
+              <ellipse cx="120" cy="54" rx="50" ry="10" fill="#3f2266" />
+              <path d="M92 52 C100 32 116 12 134 -8 C132 14 142 34 150 52 Z" fill="#5b3392" />
+              <path d="M96 42 L146 42 L150 52 L91 52 Z" fill="#f59a2e" />
+              <rect x="115" y="41" width="12" height="12" rx="2" fill="none" stroke="#ffe08a" stroke-width="3" />
             </g>
+
             <!-- left arm -->
             <ellipse cx="40" cy="152" rx="13" ry="20" fill="#6dbfb4" transform="rotate(20 40 152)" />
 
             <!-- face -->
             <g class="eyes">
               <g class="eye">
-                <ellipse cx="90" cy="112" rx="9" ry="12" fill="#2b3a35" />
-                <circle cx="93" cy="107" r="3.4" fill="#fff" />
-                <circle cx="87" cy="117" r="1.6" fill="#fff" />
+                <ellipse cx="90" cy="114" rx="9" ry="12" fill="#2b1f3a" />
+                <circle cx="93" cy="109" r="3.4" fill="#fff" />
+                <circle cx="87" cy="119" r="1.6" fill="#fff" />
               </g>
               <g class="eye">
-                <ellipse cx="150" cy="112" rx="9" ry="12" fill="#2b3a35" />
-                <circle cx="153" cy="107" r="3.4" fill="#fff" />
-                <circle cx="147" cy="117" r="1.6" fill="#fff" />
+                <ellipse cx="150" cy="114" rx="9" ry="12" fill="#2b1f3a" />
+                <circle cx="153" cy="109" r="3.4" fill="#fff" />
+                <circle cx="147" cy="119" r="1.6" fill="#fff" />
               </g>
             </g>
-            <ellipse cx="72" cy="134" rx="9" ry="6" fill="#f6a9a0" opacity="0.65" />
-            <ellipse cx="168" cy="134" rx="9" ry="6" fill="#f6a9a0" opacity="0.65" />
-            <path class="mouth-smile" d="M108 132 Q120 145 132 132" stroke="#2b3a35" stroke-width="3" fill="none" stroke-linecap="round" />
-            <ellipse class="mouth-open" cx="120" cy="137" rx="8" ry="7" fill="#c4574f" />
+            <ellipse cx="72" cy="136" rx="9" ry="6" fill="#f6a9a0" opacity="0.7" />
+            <ellipse cx="168" cy="136" rx="9" ry="6" fill="#f6a9a0" opacity="0.7" />
+            <path class="mouth-smile" d="M108 134 Q120 147 132 134" stroke="#2b1f3a" stroke-width="3" fill="none" stroke-linecap="round" />
+            <ellipse class="mouth-open" cx="120" cy="139" rx="8" ry="7" fill="#c4574f" />
 
             <!-- right arm, coin, hand -->
             <ellipse cx="200" cy="150" rx="13" ry="20" fill="#6dbfb4" transform="rotate(-20 200 150)" />
@@ -434,25 +528,26 @@
     <section class="chat">
       <div id="chat-messages" class="messages" aria-live="polite">
         <div class="message assistant-message">
-          <p>I've got your Expenses notebook open. What shall we look at first?</p>
+          <p>Boo! 🎃 Your planner is open. Tell me what you buy or earn and I'll log it, or tell me about something big you're saving for.</p>
         </div>
       </div>
 
-      <div class="typing-indicator" id="typing-indicator">Fin is counting coins...</div>
+      <div class="typing-indicator" id="typing-indicator">Fin is counting coins by candlelight...</div>
 
       <div class="chips" id="chips">
-        <button class="chip" type="button" data-q="How much have I spent this week?">How much have I spent this week?</button>
-        <button class="chip" type="button" data-q="What are my biggest expenses lately?">My biggest expenses</button>
-        <button class="chip" type="button" data-q="Can I afford a $40 treat today?">Can I afford a $40 treat?</button>
+        <button class="chip" type="button" data-q="How much can I spend this week?">How much can I spend this week?</button>
+        <button class="chip" type="button" data-q="What bills are coming up?">What bills are coming up?</button>
+        <button class="chip" type="button" data-q="Can I afford a $40 treat?">Can I afford a $40 treat?</button>
+        <button class="chip" type="button" data-q="I want to plan for a big purchase. What do you need from me?">Plan a big purchase</button>
       </div>
 
       <div class="message-input">
-        <textarea id="user-input" placeholder="Ask Fin about your money..." rows="1" autofocus></textarea>
+        <textarea id="user-input" placeholder="Tell Fin what you bought..." rows="1" autofocus></textarea>
         <button id="send-button" type="button">Ask</button>
       </div>
     </section>
 
-    <footer>Fin keeps watch over your Notion coins</footer>
+    <footer>Fin haunts your Notion so your coins don't vanish 👻</footer>
   </main>
 
   <script src="chat.js"></script>
