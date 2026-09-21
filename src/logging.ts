@@ -6,7 +6,7 @@
  * validates every field in code -> writes to Notion -> reports exactly what
  * happened (so Fin never claims something was saved when it wasn't).
  */
-import { AUTO_LINK_IN_NOTION, MODEL_ID } from "./config";
+import { MODEL_ID } from "./config";
 import {
 	addDays,
 	daysBetween,
@@ -22,7 +22,7 @@ import {
 	readIncome,
 	type FinanceData,
 } from "./finance";
-import { addToRelation, appendRelation, createPage, P, plain, titleOf, trashPage, updatePage } from "./notion";
+import { appendRelation, createPage, P, titleOf, trashPage, updatePage } from "./notion";
 import type { Env } from "./types";
 
 /* ---------------- What the AI extracts ---------------- */
@@ -239,8 +239,6 @@ export interface LogReport {
 	needsInfo: string[];
 	failures: string[];
 	guessedNeedWant: boolean;
-	/** Existing rows that were linked to their Week/Month so Notion's totals add up. */
-	linked: string[];
 	/** True if anything in Notion changed (so Notion's own formulas may lag). */
 	changed: boolean;
 }
@@ -255,7 +253,6 @@ export function emptyReport(): LogReport {
 		needsInfo: [],
 		failures: [],
 		guessedNeedWant: false,
-		linked: [],
 		changed: false,
 	};
 }
@@ -276,9 +273,9 @@ export async function applyActions(
 	data: FinanceData,
 	ex: Extraction,
 	today: string,
-	report: LogReport = emptyReport(),
 	now = Date.now(),
 ): Promise<LogReport> {
+	const report = emptyReport();
 
 	/* ---- Undo (only ever the most recent entry, within 30 minutes) ---- */
 	if (ex.undoLast) {
@@ -499,7 +496,6 @@ export function formatReport(r: LogReport): string {
 		r.planned.forEach((s) => lines.push(`• ${s}`));
 	}
 	r.markedPaid.forEach((s) => lines.push(`✅ ${s}`));
-	r.linked.forEach((s) => lines.push(`🔗 ${s}`));
 	if (r.undone) lines.push(`↩️ Removed: ${r.undone}`);
 	r.duplicates.forEach((s) => lines.push(`👻 Already have it: ${s}`));
 	r.needsInfo.forEach((s) => lines.push(`❓ ${s}`));
@@ -513,7 +509,6 @@ export function reportForModel(r: LogReport): string | null {
 		r.saved.length ||
 		r.planned.length ||
 		r.markedPaid.length ||
-		r.linked.length ||
 		r.undone ||
 		r.duplicates.length ||
 		r.needsInfo.length ||
@@ -533,80 +528,3 @@ export function plannedNamesOf(data: FinanceData): string[] {
 		.slice(0, 15);
 }
 
-
-/* ---------------- Keeping Notion's own totals right ---------------- */
-
-/**
- * Links existing income + purchase rows to this week's page, and income rows to
- * their Month page, when they were never linked. Notion's Week/Month totals only
- * count LINKED rows, so without this they under-report. Additive only. Never throws.
- */
-export async function syncLinks(
-	env: Env,
-	data: FinanceData,
-	today: string,
-	report: LogReport,
-): Promise<void> {
-	if (!AUTO_LINK_IN_NOTION) return;
-
-	try {
-		const week = findWeekFor(data.weeks, today);
-		if (week) {
-			const inWeek = (d: string | null) => !!d && d >= week.range.start && d <= week.range.end;
-
-			const groups: { prop: string; label: string; ids: string[] }[] = [
-				{
-					prop: "Incomes",
-					label: "income",
-					ids: data.incomes.map(readIncome).filter((i) => inWeek(i.date) && i.amount > 0).map((i) => i.id),
-				},
-				{
-					prop: "Daily Purchases",
-					label: "purchase",
-					ids: data.purchases.map(readPurchase).filter((p) => inWeek(p.date) && p.amount > 0).map((p) => p.id),
-				},
-			];
-
-			for (const g of groups) {
-				const linked = new Set<string>(plain(week.page.properties[g.prop]) ?? []);
-				const missing = g.ids.filter((id) => !linked.has(id));
-				if (missing.length === 0) continue;
-				try {
-					const added = await addToRelation(env, week.id, g.prop, missing);
-					if (added > 0) {
-						report.changed = true;
-						report.linked.push(
-							`Linked ${added} ${g.label} ${added === 1 ? "entry" : "entries"} to ${week.title} so your weekly totals in Notion add up.`,
-						);
-					}
-				} catch (e) {
-					report.failures.push(`Couldn't link ${g.label} rows to ${week.title}: ${explainWriteError(e)}`);
-				}
-			}
-		}
-
-		// Income rows with no Month link (cap the work per message).
-		let fixed = 0;
-		for (const page of data.incomes) {
-			if (fixed >= 15) break;
-			const inc = readIncome(page);
-			if (inc.monthIds.length > 0 || !inc.date || inc.amount <= 0) continue;
-			const month = findMonthFor(data.months, inc.date);
-			if (!month) continue;
-			try {
-				await updatePage(env, page.id, { properties: { Month: P.relation([month.id]) } });
-				page.properties["Month"] = { type: "relation", relation: [{ id: month.id }] };
-				fixed++;
-			} catch (e) {
-				report.failures.push(`Couldn't link income rows to their month: ${explainWriteError(e)}`);
-				break;
-			}
-		}
-		if (fixed > 0) {
-			report.changed = true;
-			report.linked.push(`Linked ${fixed} income ${fixed === 1 ? "entry" : "entries"} to their month so monthly totals in Notion add up.`);
-		}
-	} catch (e) {
-		console.error("syncLinks failed:", e);
-	}
-}

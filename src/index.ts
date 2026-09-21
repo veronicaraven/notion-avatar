@@ -8,7 +8,6 @@ import {
 	hasActions,
 	plannedNamesOf,
 	reportForModel,
-	syncLinks,
 } from "./logging";
 import type { ChatMessage, Env } from "./types";
 
@@ -56,7 +55,7 @@ YOUR FINANCIAL-EXPERT TOOLKIT (use what fits, in plain language, one idea at a t
 DATA RULES
 - Amounts are US dollars, written like $12.34.
 - Prefer precomputed values from the snapshot over doing your own math. Simple subtraction or division is fine; double-check it.
-- Income: use this_week.income_logged / this_week.income_entries and this_month.income_logged. They are sums of her Incomes sheet by date and include every row. When she asks about income, name the entries (source and amount) so she can check them.
+- Prefer this_week.notion.* values (her own Notion formulas) when they exist and no new entries were just saved. If they disagree with the app's numbers, trust the app's numbers.
 - Overdue bills or bills due in the next 3 days: mention once, gently, when relevant.
 - Never say something was saved unless the JUST HANDLED section says so.
 `.trim();
@@ -157,18 +156,13 @@ async function handleChat(request: Request, env: Env): Promise<Response> {
 			plannedNamesOf(data),
 		);
 
-		// Link any income/purchase rows that were never attached to this week/month,
-		// so Notion's own weekly and monthly totals stop under-counting.
-		const report = emptyReport();
-		await syncLinks(env, data, today, report);
-
+		let report = emptyReport();
 		if (hasActions(extraction)) {
-			await applyActions(env, data, extraction, today, report);
+			report = await applyActions(env, data, extraction, today);
 		}
 
-		// Notion's Week/Month formulas only count LINKED rows, so they can be wrong.
-		// Fin uses his own sums (by date) instead and leaves those formulas out.
-		const snapshot = buildSnapshot(data, today, false);
+		// If we just changed Notion, its own formulas may lag a few seconds, so leave them out.
+		const snapshot = buildSnapshot(data, today, !report.changed);
 		const system = buildSystemPrompt(snapshot, reportForModel(report), data.errors);
 
 		const stream = (await env.AI.run(MODEL_ID, {
