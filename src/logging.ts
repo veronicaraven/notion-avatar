@@ -6,7 +6,7 @@
  * validates every field in code -> writes to Notion -> reports exactly what
  * happened (so Fin never claims something was saved when it wasn't).
  */
-import { AUTO_LINK_IN_NOTION, EXTRACTION_MODEL_ID } from "./config";
+import { AUTO_LINK_IN_NOTION, MODEL_ID } from "./config";
 import {
 	addDays,
 	daysBetween,
@@ -163,7 +163,7 @@ export async function extractActions(
 			max_tokens: 600,
 			temperature: 0,
 		};
-		const out = (await env.AI.run(EXTRACTION_MODEL_ID, body as any)) as unknown as any;
+		const out = (await env.AI.run(MODEL_ID, body as any)) as unknown as any;
 
 		let raw: any = out?.response ?? out;
 		if (typeof raw === "string") {
