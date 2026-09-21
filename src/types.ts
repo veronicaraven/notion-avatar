@@ -1,28 +1,37 @@
-/**
- * Type definitions for the LLM chat application.
- */
-
-export interface Env {
-	/**
-	 * Binding for the Workers AI API.
-	 */
-	AI: Ai;
-
-	/**
-	 * Binding for static assets.
-	 */
-	ASSETS: { fetch: (request: Request) => Promise<Response> };
-
-	/**
-	 * Secret containing the Notion integration token.
-	 */
-	NOTION_TOKEN: string;
+export interface ChatMessage {
+	role: "user" | "assistant";
+	content: string;
 }
 
-/**
- * Represents a chat message.
- */
-export interface ChatMessage {
-	role: "system" | "user" | "assistant";
-	content: string;
+/** Minimal Workers AI binding shape used by this project. */
+export interface AiBinding {
+	run(model: string, input: unknown): Promise<unknown>;
+}
+
+/** Minimal static assets binding shape used by this project. */
+export interface AssetsBinding {
+	fetch(request: Request): Promise<Response>;
+}
+
+/** Minimal KV shape needed by Fin. */
+export interface KvBinding {
+	get(key: string): Promise<string | null>;
+	put(
+		key: string,
+		value: string,
+		options?: { expirationTtl?: number },
+	): Promise<void>;
+	delete(key: string): Promise<void>;
+}
+
+export interface Env {
+	NOTION_TOKEN: string;
+	AI: AiBinding;
+	ASSETS: AssetsBinding;
+
+	/** Optional Cloudflare KV binding. Binding name must be FIN_MEMORY. */
+	FIN_MEMORY?: KvBinding;
+
+	/** Set to "true" only when you intentionally want /api/notion/test exposed. */
+	ENABLE_DIAGNOSTICS?: string;
 }

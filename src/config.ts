@@ -1,20 +1,22 @@
-/**
- * Shared settings for Fin.
- */
+/** Shared settings for Fin. */
+
+/** Main model used for Fin's financial conversation and reasoning. */
+export const CHAT_MODEL_ID = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 
 /**
- * The model used for BOTH reading your message (to spot purchases/income to
- * log) and for chatting. The 70B model is much better at doing money math and
- * at pulling exact amounts out of a message than the 8B one.
- *
- * To save Workers AI usage you can switch to the smaller model:
- *   "@cf/meta/llama-3.1-8b-instruct-fp8"
- * but expect more mistakes when logging and doing math.
+ * Smaller model used only to turn messages like "spent $8 on lunch" into
+ * structured logging actions. Keeping extraction separate saves AI usage.
  */
-export const MODEL_ID = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+export const EXTRACTION_MODEL_ID = "@cf/meta/llama-3.1-8b-instruct-fp8";
 
-/**
- * Used only if the browser doesn't send its timezone. Dates like "today" and
- * "yesterday" depend on this. Any IANA name works, e.g. "America/New_York".
- */
+/** Fallback timezone when the browser does not send one. */
 export const DEFAULT_TZ = "America/Denver";
+
+/** Keep Notion Week/Month relations repaired when Fin handles a message. */
+export const AUTO_LINK_IN_NOTION = true;
+
+/** Number of user/assistant messages retained in server-side KV memory. */
+export const MEMORY_MESSAGE_LIMIT = 30;
+
+/** KV expiration: 180 days. */
+export const MEMORY_TTL_SECONDS = 60 * 60 * 24 * 180;

@@ -105,15 +105,16 @@ export function trashPage(env: Env, pageId: string): Promise<NotionPage> {
 }
 
 /**
- * Adds one page to a relation property without losing the ones already there.
+ * Adds pages to a relation property without losing the ones already there.
  * (Notion replaces the whole relation list on update, so we read it first.)
+ * Returns how many were actually added.
  */
-export async function appendRelation(
+export async function addToRelation(
 	env: Env,
 	pageId: string,
 	propertyName: string,
-	newId: string,
-): Promise<void> {
+	newIds: string[],
+): Promise<number> {
 	const page = await getPage(env, pageId);
 	const prop = page.properties?.[propertyName];
 	if (!prop || prop.type !== "relation") {
@@ -141,13 +142,25 @@ export async function appendRelation(
 		} while (cursor);
 	}
 
-	if (ids.includes(newId)) return;
+	const toAdd = [...new Set(newIds)].filter((id) => !ids.includes(id));
+	if (toAdd.length === 0) return 0;
 
 	await updatePage(env, pageId, {
 		properties: {
-			[propertyName]: { relation: [...ids, newId].map((id) => ({ id })) },
+			[propertyName]: { relation: [...ids, ...toAdd].map((id) => ({ id })) },
 		},
 	});
+	return toAdd.length;
+}
+
+/** Adds a single page to a relation property. */
+export async function appendRelation(
+	env: Env,
+	pageId: string,
+	propertyName: string,
+	newId: string,
+): Promise<void> {
+	await addToRelation(env, pageId, propertyName, [newId]);
 }
 
 /* ---------------- Reading property values ---------------- */

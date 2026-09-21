@@ -352,7 +352,9 @@ export function buildSnapshot(data: FinanceData, today: string, includeNotionCal
 	/* --- this month --- */
 	const monthPurchases = purchases.filter((p) => inRange(p.date, monthStart, monthEnd));
 	const monthIncomes = incomes.filter(
-		(i) => inRange(i.date, monthStart, monthEnd) || (monthInfo && i.monthIds.includes(monthInfo.id)),
+		(i) =>
+			i.amount > 0 &&
+			(inRange(i.date, monthStart, monthEnd) || (monthInfo && i.monthIds.includes(monthInfo.id))),
 	);
 	const monthBills = bills.filter(
 		(b) => (monthInfo && b.monthIds.includes(monthInfo.id)) || inRange(b.due, monthStart, monthEnd),
@@ -455,14 +457,15 @@ export function buildSnapshot(data: FinanceData, today: string, includeNotionCal
 		.slice(0, 15)
 		.map((p) => ({ date: p.date, item: p.item, amount: p.amount, category: p.category, need_or_want: p.needOrWant }));
 	const recentIncomes = incomes
-		.slice(0, 6)
-		.map((i) => ({ date: i.date, title: i.title, amount: i.amount, source: i.source }));
+		.filter((i) => i.amount > 0)
+		.slice(0, 8)
+		.map((i) => ({ date: i.date, source: i.source, note: i.title || undefined, amount: i.amount }));
 
 	return {
 		today,
 		weekday: weekdayName(today),
 		notes:
-			"Only money that has been logged is counted. There is no bank balance in Notion, so 'money left' means logged income minus logged bills and purchases.",
+			"Income totals are sums of the Incomes sheet by date (every row counts, linked or not). Only money that has been logged is counted. There is no bank balance in Notion, so 'money left' means logged income minus logged bills and purchases.",
 		this_week: {
 			label: weekInfo?.title ?? `${range.start} to ${range.end}`,
 			start: range.start,
@@ -473,6 +476,9 @@ export function buildSnapshot(data: FinanceData, today: string, includeNotionCal
 			purchases_by_category: groupSum(weekPurchases),
 			last_week_purchases_total: lastWeekTotal,
 			income_logged: weekIncome,
+			income_entries: incomes
+				.filter((i) => inRange(i.date, range.start, range.end) && i.amount > 0)
+				.map((i) => ({ date: i.date, source: i.source, note: i.title || undefined, amount: i.amount })),
 			bills_due_this_week: sum(dueThisWeek.map((b) => b.amount)),
 			notion: includeNotionCalcs
 				? pick(weekInfo?.page, [
