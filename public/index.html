@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#473522" />
+  <meta name="theme-color" content="#273329" />
   <title>Fin</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -11,484 +11,324 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Patrick+Hand&display=swap" rel="stylesheet" />
 
   <style>
-    :root {
-      --wood: #4c3725;
-      --wood-deep: #2c2118;
-      --cream: #fffaf0;
-      --paper: #f6efe2;
-      --paper-2: #eee5d3;
-      --sage: #899b69;
-      --sage-dark: #66774f;
-      --moss: #526042;
-      --ink: #40372f;
-      --muted: #7d7469;
-      --line: #d8cdbc;
-      --glow: rgba(255, 222, 151, 0.28);
-      --font-body: "Nunito", system-ui, sans-serif;
-      --font-hand: "Patrick Hand", cursive;
+    :root{
+      --cream:#fbf6ea;
+      --paper:#f4eddf;
+      --ink:#3f3a33;
+      --muted:#7d756b;
+      --sage:#95a97b;
+      --sage-dark:#687a57;
+      --moss:#596c4f;
+      --forest:#26362d;
+      --forest-2:#34483b;
+      --gold:#e3c57a;
+      --lav:#9c90bd;
+      --line:#ddd2c1;
+      --font:"Nunito",system-ui,sans-serif;
+      --hand:"Patrick Hand",cursive;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      min-height:100vh;
+      font-family:var(--font);
+      color:var(--ink);
+      background:#18231c;
+      display:flex;
+      justify-content:center;
+      padding:18px;
+    }
 
-    html, body { min-height: 100%; }
+    .app{
+      width:min(900px,100%);
+      border-radius:28px;
+      overflow:hidden;
+      background:var(--cream);
+      box-shadow:0 28px 80px rgba(0,0,0,.38);
+    }
 
-    body {
-      font-family: var(--font-body);
-      color: var(--ink);
+    .hero{
+      position:relative;
+      height:390px;
+      overflow:hidden;
       background:
-        radial-gradient(circle at 20% 0%, rgba(163, 133, 89, .15), transparent 28%),
-        linear-gradient(180deg, #2c231b, #1d1814);
-      display: flex;
-      justify-content: center;
-      padding: 18px;
+        radial-gradient(circle at 75% 18%, rgba(249,230,177,.25), transparent 28%),
+        linear-gradient(180deg,#31483a 0%,#405846 62%,#314234 100%);
     }
 
-    .app {
-      width: min(980px, 100%);
-      border-radius: 30px;
-      overflow: hidden;
-      box-shadow: 0 28px 80px rgba(0, 0, 0, .45);
-      background: var(--wood-deep);
-      border: 1px solid rgba(255,255,255,.06);
+    .brand{
+      position:absolute;
+      z-index:5;
+      left:28px;
+      top:22px;
+      color:#fff9ea;
+      text-shadow:0 2px 14px rgba(0,0,0,.32);
+    }
+    .brand h1{font:400 66px/.8 var(--hand)}
+    .brand p{font:400 20px/1.05 var(--hand);margin-top:11px;max-width:220px}
+
+    .moon{
+      position:absolute;
+      right:55px; top:34px;
+      width:74px;height:74px;border-radius:50%;
+      background:#f7e7b5;
+      box-shadow:0 0 42px rgba(247,231,181,.34);
+      opacity:.78;
     }
 
-    .hero {
-      position: relative;
-      min-height: 560px;
-      background:
-        linear-gradient(to bottom, rgba(20, 16, 12, .05), rgba(20,16,12,.18)),
-        url("fin-wizard.png") center 34% / cover no-repeat;
-      isolation: isolate;
+    .shelf{
+      position:absolute;
+      left:0;right:0;bottom:0;height:86px;
+      background:#26352c;
+      border-top:1px solid rgba(255,255,255,.05);
+    }
+    .shelf:before{
+      content:"";
+      position:absolute;left:0;right:0;top:-10px;height:16px;
+      background:#4f4a38;
+      box-shadow:0 4px 8px rgba(0,0,0,.22);
     }
 
-    .hero::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(to bottom, transparent 55%, rgba(36, 27, 20, .42) 82%, rgba(36,27,20,.8));
-      z-index: -1;
-      pointer-events: none;
+    .plant{
+      position:absolute;right:34px;bottom:56px;width:76px;height:96px;
+      opacity:.9;
+    }
+    .plant .pot{
+      position:absolute;bottom:0;left:18px;width:42px;height:35px;
+      background:#8b6d4f;border-radius:4px 4px 15px 15px;
+    }
+    .plant i{
+      position:absolute;width:24px;height:44px;background:#799267;
+      border-radius:70% 0 70% 0;transform-origin:bottom center;
+    }
+    .plant i:nth-child(2){left:26px;bottom:27px;transform:rotate(-28deg)}
+    .plant i:nth-child(3){left:40px;bottom:30px;transform:rotate(22deg)}
+    .plant i:nth-child(4){left:31px;bottom:42px;transform:rotate(3deg)}
+
+    .speech{
+      position:absolute;
+      z-index:6;
+      top:122px;
+      right:6%;
+      width:min(360px,43%);
+      background:rgba(251,246,234,.96);
+      border:1px solid rgba(99,82,61,.13);
+      border-radius:27px 27px 27px 10px;
+      padding:17px 20px;
+      font:400 20px/1.18 var(--hand);
+      box-shadow:0 12px 30px rgba(0,0,0,.14);
     }
 
-    .brand {
-      position: absolute;
-      left: 32px;
-      top: 24px;
-      color: #fff7e8;
-      text-shadow: 0 2px 16px rgba(0,0,0,.55);
+    .fin{
+      position:absolute;
+      z-index:4;
+      left:6%;
+      bottom:22px;
+      width:285px;height:300px;
+    }
+    .fin svg{width:100%;height:100%;overflow:visible}
+
+    .fin-bob{animation:bob 4.4s ease-in-out infinite;transform-origin:center bottom}
+    @keyframes bob{0%,100%{transform:translateY(0) rotate(-.4deg)}50%{transform:translateY(-8px) rotate(.6deg)}}
+
+    .eye{transform-box:fill-box;transform-origin:center;animation:blink 5.8s infinite}
+    @keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.08)}}
+
+    .hat-tip{transform-box:fill-box;transform-origin:30% 92%;animation:hat 4.8s ease-in-out infinite}
+    @keyframes hat{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(3deg)}}
+
+    .book{transform-box:fill-box;transform-origin:center;animation:book 3.1s ease-in-out infinite}
+    @keyframes book{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-9px) rotate(3deg)}}
+
+    .wand-star{transform-box:fill-box;transform-origin:center;animation:star 1.9s ease-in-out infinite}
+    @keyframes star{0%,100%{opacity:.55;transform:scale(.85) rotate(0deg)}50%{opacity:1;transform:scale(1.18) rotate(18deg)}}
+
+    .spark{animation:spark 2.8s ease-in-out infinite;transform-origin:center}
+    .spark.s2{animation-delay:-1s}.spark.s3{animation-delay:-1.8s}
+    @keyframes spark{0%,100%{opacity:.2;transform:translateY(5px) scale(.7)}50%{opacity:1;transform:translateY(-8px) scale(1.15)}}
+
+    .mouth-open{opacity:0;transform-box:fill-box;transform-origin:center}
+    .fin[data-state="thinking"] .book{animation-duration:.9s}
+    .fin[data-state="thinking"] .wand-star{animation-duration:.55s}
+    .fin[data-state="talking"] .mouth-smile{opacity:0}
+    .fin[data-state="talking"] .mouth-open{animation:talk .26s ease-in-out infinite alternate}
+    @keyframes talk{from{opacity:1;transform:scaleY(.5)}to{opacity:1;transform:scaleY(1.18)}}
+
+    .chat{
+      padding:20px 22px 24px;
+      background:var(--cream);
+      display:flex;flex-direction:column;gap:12px;
+    }
+    .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .toolbar-title{font:400 22px var(--hand);color:#5f584f}
+    #clear-chat{
+      border:1px solid #cbc1af;background:#eff1e6;color:#56634b;
+      border-radius:999px;padding:7px 12px;font:700 11px var(--font);cursor:pointer
     }
 
-    .brand h1 {
-      font-family: var(--font-hand);
-      font-size: clamp(60px, 8vw, 96px);
-      font-weight: 400;
-      line-height: .82;
-      letter-spacing: -.03em;
+    .messages{
+      min-height:150px;max-height:350px;overflow-y:auto;
+      display:flex;flex-direction:column;gap:10px;padding:4px 2px 8px
+    }
+    .message{max-width:83%;padding:11px 14px;font-size:14.5px;line-height:1.5;overflow-wrap:anywhere}
+    .message p{white-space:pre-line}
+    .assistant-message{align-self:flex-start;background:var(--paper);border:1px solid #e5dac8;border-radius:18px 18px 18px 6px}
+    .user-message{align-self:flex-end;background:#dfe6d1;color:#354030;font-weight:700;border-radius:18px 18px 6px 18px}
+
+    .typing-indicator{display:none;color:var(--muted);font-size:12px;padding-left:4px}
+    .typing-indicator.visible{display:block}
+
+    .chips{display:flex;flex-wrap:wrap;gap:7px}
+    .chips[hidden]{display:none}
+    .chip{
+      border:1px solid #d7cbb9;background:#fffaf2;color:#5d554b;
+      border-radius:999px;padding:7px 11px;font:600 12px var(--font);cursor:pointer
     }
 
-    .brand p {
-      margin-top: 12px;
-      max-width: 220px;
-      font-family: var(--font-hand);
-      font-size: 24px;
-      line-height: 1.05;
+    .message-input{
+      display:flex;gap:9px;align-items:flex-end;background:white;
+      border:1px solid var(--line);border-radius:20px;padding:6px
+    }
+    #user-input{
+      flex:1;border:0;outline:0;background:transparent;resize:none;
+      min-height:46px;max-height:120px;padding:12px 10px;font:400 14px var(--font);color:var(--ink)
+    }
+    #send-button{
+      width:48px;height:48px;border:0;border-radius:50%;
+      background:var(--sage);color:white;font-size:0;cursor:pointer;position:relative
+    }
+    #send-button::before{content:"✦";position:absolute;inset:0;display:grid;place-items:center;font-size:22px}
+    #send-button:hover{background:var(--sage-dark)}
+    #send-button:disabled,#user-input:disabled{opacity:.55;cursor:not-allowed}
+
+    footer{text-align:center;padding:0 18px 17px;background:var(--cream);font:400 15px var(--hand);color:#8a8277}
+
+    @media(max-width:650px){
+      body{padding:8px}.app{border-radius:21px}.hero{height:350px}
+      .brand{left:18px}.brand h1{font-size:54px}.brand p{font-size:17px;max-width:155px}
+      .fin{left:-5px;width:220px;height:235px}
+      .speech{top:115px;right:3%;width:49%;font-size:16px;padding:13px}
+      .chat{padding:16px 13px 20px}.message{max-width:92%}
+      .moon{right:20px;width:58px;height:58px}
     }
 
-    .speech {
-      position: absolute;
-      top: 132px;
-      right: 7%;
-      width: min(390px, 43%);
-      background: rgba(255, 250, 240, .96);
-      border: 1px solid rgba(109, 83, 52, .16);
-      border-radius: 32px 32px 32px 12px;
-      padding: 22px 26px;
-      font-family: var(--font-hand);
-      font-size: 24px;
-      line-height: 1.15;
-      box-shadow: 0 18px 40px rgba(0,0,0,.18);
-    }
-
-    .speech::after {
-      content: "";
-      position: absolute;
-      left: 48px;
-      bottom: -16px;
-      width: 30px;
-      height: 30px;
-      background: inherit;
-      transform: rotate(45deg);
-      border-right: 1px solid rgba(109,83,52,.12);
-      border-bottom: 1px solid rgba(109,83,52,.12);
-    }
-
-    .chat-shell {
-      margin-top: -68px;
-      position: relative;
-      z-index: 5;
-      background: rgba(255,250,240,.985);
-      border-radius: 30px 30px 0 0;
-      padding: 22px 24px 26px;
-      box-shadow: 0 -18px 40px rgba(0,0,0,.18);
-    }
-
-    .toolbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-
-    .toolbar-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-family: var(--font-hand);
-      font-size: 22px;
-      color: #5b5146;
-    }
-
-    .leaf-dot {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      background: #dce4cc;
-      color: var(--sage-dark);
-      font-size: 19px;
-    }
-
-    #clear-chat {
-      border: 1px solid #c8c1ad;
-      background: #eff2e5;
-      color: #526044;
-      padding: 8px 14px;
-      border-radius: 999px;
-      font: inherit;
-      font-size: 12px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    #clear-chat:hover { background: #e5ead7; }
-
-    .messages {
-      min-height: 160px;
-      max-height: 360px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 4px 2px 10px;
-      scrollbar-color: #b7b09f transparent;
-    }
-
-    .message {
-      max-width: 82%;
-      padding: 11px 14px;
-      font-size: 14.5px;
-      line-height: 1.5;
-      overflow-wrap: anywhere;
-    }
-
-    .message p { white-space: pre-line; }
-
-    .assistant-message {
-      align-self: flex-start;
-      background: var(--paper);
-      border: 1px solid #e2d8c7;
-      border-radius: 19px 19px 19px 7px;
-    }
-
-    .user-message {
-      align-self: flex-end;
-      background: #dce4cc;
-      color: #34402f;
-      font-weight: 700;
-      border-radius: 19px 19px 7px 19px;
-    }
-
-    .typing-indicator {
-      display: none;
-      color: var(--muted);
-      font-size: 12.5px;
-      margin: 4px 0 2px;
-      padding-left: 4px;
-    }
-
-    .typing-indicator.visible { display: block; }
-
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 4px;
-      margin-bottom: 14px;
-    }
-
-    .chips[hidden] { display: none; }
-
-    .chip {
-      border: 1px solid #d5c9b6;
-      color: #5c544b;
-      background: #fffaf1;
-      border-radius: 999px;
-      padding: 8px 13px;
-      font: inherit;
-      font-size: 12.5px;
-      cursor: pointer;
-      transition: transform .12s ease, background .12s ease;
-    }
-
-    .chip:hover {
-      background: #f2f0e4;
-      transform: translateY(-1px);
-    }
-
-    .message-input {
-      display: flex;
-      gap: 10px;
-      align-items: flex-end;
-      background: #fffdf9;
-      border: 1px solid #d9cebc;
-      border-radius: 22px;
-      padding: 7px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
-    }
-
-    #user-input {
-      flex: 1;
-      min-height: 46px;
-      max-height: 120px;
-      resize: none;
-      border: 0;
-      outline: 0;
-      background: transparent;
-      color: var(--ink);
-      font: inherit;
-      font-size: 14px;
-      padding: 12px 10px;
-    }
-
-    #user-input::placeholder { color: #aaa093; }
-
-    #send-button {
-      flex: 0 0 auto;
-      width: 50px;
-      height: 50px;
-      border: 0;
-      border-radius: 50%;
-      background: var(--sage);
-      color: white;
-      font: inherit;
-      font-size: 0;
-      cursor: pointer;
-      position: relative;
-      box-shadow: 0 3px 8px rgba(80, 95, 62, .25);
-    }
-
-    #send-button::before {
-      content: "➤";
-      font-size: 22px;
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      transform: translateX(1px) rotate(-8deg);
-    }
-
-    #send-button:hover { background: var(--sage-dark); }
-
-    #send-button:disabled,
-    #user-input:disabled {
-      opacity: .55;
-      cursor: not-allowed;
-    }
-
-    .footer-note {
-      text-align: center;
-      padding: 15px 20px 20px;
-      background: rgba(255,250,240,.985);
-      font-family: var(--font-hand);
-      font-size: 16px;
-      color: #8a8278;
-    }
-
-    /* Keep the Fin state hook working even though the hero is now an illustration. */
-    #fin {
-      position: absolute;
-      left: 0;
-      bottom: 0;
-      width: 1px;
-      height: 1px;
-      pointer-events: none;
-    }
-
-    .hero[data-fin-state="thinking"]::before,
-    .hero[data-fin-state="talking"]::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background: radial-gradient(circle at 67% 47%, var(--glow), transparent 15%);
-      animation: shimmer 1.4s ease-in-out infinite;
-    }
-
-    @keyframes shimmer {
-      0%,100% { opacity: .35; }
-      50% { opacity: .9; }
-    }
-
-    @media (max-width: 720px) {
-      body { padding: 8px; }
-
-      .app { border-radius: 22px; }
-
-      .hero {
-        min-height: 500px;
-        background-position: 50% 24%;
-      }
-
-      .brand {
-        left: 20px;
-        top: 18px;
-      }
-
-      .brand h1 { font-size: 58px; }
-
-      .brand p {
-        max-width: 160px;
-        font-size: 20px;
-      }
-
-      .speech {
-        top: 122px;
-        right: 4%;
-        width: 50%;
-        font-size: 18px;
-        padding: 16px 18px;
-      }
-
-      .chat-shell {
-        margin-top: -48px;
-        padding: 16px 14px 20px;
-      }
-
-      .message { max-width: 92%; }
-
-      .toolbar-title { font-size: 18px; }
-
-      #clear-chat { font-size: 11px; }
-    }
-
-    @media (max-width: 480px) {
-      .hero {
-        min-height: 430px;
-        background-position: 49% 18%;
-      }
-
-      .brand p { display: none; }
-
-      .speech {
-        top: 92px;
-        right: 3%;
-        width: 58%;
-        font-size: 15px;
-      }
-
-      .chat-shell { margin-top: -34px; }
-
-      .chips { gap: 6px; }
-
-      .chip {
-        font-size: 11.5px;
-        padding: 7px 10px;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      * { scroll-behavior: auto !important; }
-      .hero[data-fin-state]::before { animation: none !important; }
+    @media(prefers-reduced-motion:reduce){
+      .fin-bob,.eye,.hat-tip,.book,.wand-star,.spark,.mouth-open{animation:none!important}
     }
   </style>
 </head>
-
 <body>
   <main class="app">
-    <section class="hero" id="hero">
+    <section class="hero">
       <div class="brand">
         <h1>Fin</h1>
-        <p>your friendly finance familiar ♡</p>
+        <p>your friendly financial familiar ♡</p>
       </div>
+
+      <div class="moon"></div>
 
       <div class="speech">
-        Hi there! I'm Fin. Tell me what you bought, earned, or are planning for — I'll help you keep track and make sense of it.
+        Bring me a purchase, a paycheck, a bill, or a plan. I’ll help you see what it means for the rest of your week.
       </div>
 
-      <div id="fin" data-state="idle" aria-hidden="true"></div>
+      <div class="plant" aria-hidden="true">
+        <div class="pot"></div><i></i><i></i><i></i>
+      </div>
+
+      <div class="shelf"></div>
+
+      <div class="fin" id="fin" data-state="idle">
+        <svg viewBox="0 0 300 320" role="img" aria-label="Fin, a cute magical forest wizard familiar">
+          <ellipse cx="145" cy="294" rx="74" ry="10" fill="#132019" opacity=".3"/>
+
+          <g class="fin-bob">
+            <!-- robe -->
+            <path d="M86 135 C96 103 118 87 146 87 C181 87 204 109 211 143 C219 185 199 244 180 278 C154 286 121 286 91 277 C72 233 70 176 86 135 Z" fill="#71846c"/>
+            <path d="M105 154 C124 143 165 143 190 156 C187 199 180 238 166 267 C148 272 126 272 108 266 C99 228 97 190 105 154 Z" fill="#83967d"/>
+
+            <!-- cloak stars -->
+            <g fill="#efd78f">
+              <circle cx="122" cy="190" r="2.3"/>
+              <circle cx="160" cy="217" r="2"/>
+              <path d="M176 180 l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/>
+              <path d="M118 235 l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z"/>
+            </g>
+
+            <!-- face -->
+            <ellipse cx="148" cy="132" rx="57" ry="50" fill="#d5dfc1"/>
+            <path d="M95 127 C78 122 73 134 84 144 C89 147 94 145 99 141 Z" fill="#c6d3b2"/>
+            <path d="M201 127 C219 122 224 134 212 144 C207 147 202 145 197 141 Z" fill="#c6d3b2"/>
+
+            <g class="eye"><ellipse cx="123" cy="130" rx="7.5" ry="10" fill="#313a31"/><circle cx="125" cy="126" r="2.2" fill="#fff"/></g>
+            <g class="eye"><ellipse cx="172" cy="130" rx="7.5" ry="10" fill="#313a31"/><circle cx="174" cy="126" r="2.2" fill="#fff"/></g>
+
+            <ellipse cx="105" cy="148" rx="9" ry="5" fill="#dcaaa3" opacity=".55"/>
+            <ellipse cx="190" cy="148" rx="9" ry="5" fill="#dcaaa3" opacity=".55"/>
+            <path class="mouth-smile" d="M136 150 Q148 161 160 150" stroke="#4c584c" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <ellipse class="mouth-open" cx="148" cy="155" rx="7" ry="6" fill="#936b67"/>
+
+            <!-- huge wizard hat -->
+            <ellipse cx="145" cy="94" rx="79" ry="16" fill="#445744"/>
+            <g class="hat-tip">
+              <path d="M85 90 C89 57 112 15 154 -8 C149 25 168 59 195 86 C163 99 115 101 85 90 Z" fill="#596e54"/>
+              <path d="M125 22 C144 14 159 6 174 -5 C171 16 178 35 190 52 C173 39 150 29 125 22 Z" fill="#6a8163"/>
+            </g>
+            <path d="M83 86 C112 96 166 97 197 84 L202 96 C166 108 111 108 77 96 Z" fill="#8e7eaa"/>
+            <circle cx="136" cy="97" r="5" fill="#e2c675"/>
+            <path d="M105 92 C96 76 83 69 69 72 C79 86 90 92 105 92 Z" fill="#829b6d"/>
+
+            <!-- wand -->
+            <path d="M90 188 C67 180 54 192 58 207 C62 221 78 219 101 204 Z" fill="#768b70"/>
+            <line x1="70" y1="199" x2="43" y2="157" stroke="#8a6949" stroke-width="5" stroke-linecap="round"/>
+            <g class="wand-star">
+              <path d="M42 143 l5 10 11 4-11 4-5 11-4-11-11-4 11-4z" fill="#f2d990"/>
+              <circle cx="42" cy="157" r="18" fill="#f5dc91" opacity=".1"/>
+            </g>
+
+            <!-- floating book -->
+            <g class="book">
+              <path d="M213 151 C228 143 244 144 258 151 L255 190 C241 185 227 186 214 193 Z" fill="#f3ead7"/>
+              <path d="M214 151 C199 143 184 145 172 153 L176 191 C188 186 201 187 214 193 Z" fill="#e8dcc2"/>
+              <path d="M214 151 L214 193" stroke="#b69d72" stroke-width="2"/>
+              <path d="M183 165 C191 161 200 161 207 164" stroke="#a29a85" stroke-width="1.5" fill="none"/>
+              <path d="M224 164 C233 161 243 163 249 166" stroke="#a29a85" stroke-width="1.5" fill="none"/>
+            </g>
+
+            <!-- sparks -->
+            <g fill="#f5dda0">
+              <circle class="spark s1" cx="240" cy="125" r="3"/>
+              <path class="spark s2" d="M264 144 l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/>
+              <circle class="spark s3" cx="229" cy="106" r="2"/>
+            </g>
+          </g>
+        </svg>
+      </div>
     </section>
 
-    <section class="chat-shell">
+    <section class="chat">
       <div class="toolbar">
-        <div class="toolbar-title">
-          <span class="leaf-dot">❧</span>
-          <span>Fin's notebook</span>
-        </div>
-        <button id="clear-chat" type="button">+ New conversation</button>
+        <div class="toolbar-title">✦ Fin's little spellbook</div>
+        <button id="clear-chat" type="button">New conversation</button>
       </div>
 
       <div id="chat-messages" class="messages" aria-live="polite"></div>
-
-      <div class="typing-indicator" id="typing-indicator">
-        Fin is looking through your plan...
-      </div>
+      <div id="typing-indicator" class="typing-indicator">Fin is checking the numbers...</div>
 
       <div class="chips" id="chips">
-        <button class="chip" type="button" data-q="I bought a coffee for $5">❧ I bought a coffee for $5</button>
-        <button class="chip" type="button" data-q="I got paid $1,200">❧ I got paid $1,200</button>
-        <button class="chip" type="button" data-q="I'm saving for a trip">❧ I'm saving for a trip</button>
-        <button class="chip" type="button" data-q="How's my spending this month?">❧ How's my spending?</button>
+        <button class="chip" type="button" data-q="How much room do I have this week?">This week's room</button>
+        <button class="chip" type="button" data-q="What bills are coming up?">Upcoming bills</button>
+        <button class="chip" type="button" data-q="How much have I spent this month?">Monthly spending</button>
+        <button class="chip" type="button" data-q="Help me plan for something I want to buy.">Plan something</button>
       </div>
 
       <div class="message-input">
-        <textarea
-          id="user-input"
-          rows="1"
-          autofocus
-          placeholder="Tell me about a purchase, income, or goal..."
-        ></textarea>
-        <button id="send-button" type="button" aria-label="Send message">Ask</button>
+        <textarea id="user-input" rows="1" autofocus placeholder="Tell Fin what happened, or ask about your plan..."></textarea>
+        <button id="send-button" type="button" aria-label="Send">Ask</button>
       </div>
     </section>
 
-    <div class="footer-note">
-      Small steps. Brighter days. ♡
-    </div>
+    <footer>Small steps. Clearer plans. A little magic helps. ♡</footer>
   </main>
-
-  <script>
-    // Mirror Fin's data-state onto the hero so the illustration can glow while
-    // the existing chat.js drives "idle", "thinking", and "talking".
-    const finStateEl = document.getElementById("fin");
-    const heroEl = document.getElementById("hero");
-
-    if (finStateEl && heroEl) {
-      const syncState = () => {
-        heroEl.dataset.finState = finStateEl.dataset.state || "idle";
-      };
-
-      new MutationObserver(syncState).observe(finStateEl, {
-        attributes: true,
-        attributeFilter: ["data-state"]
-      });
-
-      syncState();
-    }
-  </script>
-
   <script src="chat.js"></script>
 </body>
 </html>
