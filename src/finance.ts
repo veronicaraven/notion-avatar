@@ -1,30 +1,29 @@
 /**
- * Everything about reading Veronica's Financial Planner in Notion and turning
- * it into numbers Fin can trust. All the arithmetic happens here in code so the
- * AI never has to do math in its head.
+ * Everything about reading the Financial Planner in Notion and turning
+ * it into numbers Fin can trust.
+ *
+ * Important accuracy rule:
+ * We intentionally load recent purchase/income rows by created_time and filter
+ * by their effective Date in code. Filtering Notion by the Date property would
+ * silently exclude rows whose Date is blank even though Fin can safely fall
+ * back to created_time for those rows.
  */
 import type { Env } from "./types";
 import { NotionError, plain, queryAll, titleOf, type NotionPage } from "./notion";
 
-/* ------------------------------------------------------------------ */
-/* Your Notion databases (data source IDs, found in your Financial Planner) */
-/* ------------------------------------------------------------------ */
-
 export const DS = {
-	purchases: "5592e80b-ca38-46c7-b22a-208a67f838bf", // 🛍️ What I Bought Today
-	expenses: "bc89563c-5751-82a7-8836-87c7be4dae11", // Expenses (bills + planned purchases)
-	incomes: "1b89563c-5751-8333-9e55-0775f5324fba", // Incomes
-	categories: "0c19563c-5751-82f4-bfb9-070a31bb4ab3", // Budget Database (category limits)
-	months: "3d69563c-5751-8345-a39c-87bf3c5a1dd9", // Month
-	weeks: "591e9663-ff4d-4a2b-b113-3a1a794457db", // Week
-	savings: "9b516336-2578-47fe-b551-b30d401d9ba2", // 🎯 Saving For Something Big
-	debts: "84919463-2d56-4fd8-9a37-1ea7aee10450", // 💳 Debt Tracker
+	purchases: "5592e80b-ca38-46c7-b22a-208a67f838bf",
+	expenses: "bc89563c-5751-82a7-8836-87c7be4dae11",
+	incomes: "1b89563c-5751-8333-9e55-0775f5324fba",
+	categories: "0c19563c-5751-82f4-bfb9-070a31bb4ab3",
+	months: "3d69563c-5751-8345-a39c-87bf3c5a1dd9",
+	weeks: "591e9663-ff4d-4a2b-b113-3a1a794457db",
+	savings: "9b516336-2578-47fe-b551-b30d401d9ba2",
+	debts: "84919463-2d56-4fd8-9a37-1ea7aee10450",
 } as const;
 
 export const PURCHASE_CATEGORIES = ["Eating Out", "Coffee", "Groceries", "Fun", "Other"];
 export const INCOME_SOURCES = ["Wages", "Tips", "Rover", "Babysitting/Sitting", "Other"];
-
-/* ---------------- Dates (plain YYYY-MM-DD strings) ---------------- */
 
 const DAY_MS = 86_400_000;
 const MONTH_NAMES = [
@@ -33,7 +32,6 @@ const MONTH_NAMES = [
 ];
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-/** Today's date (YYYY-MM-DD) in the user's timezone. */
 export function todayIn(tz: string, now = new Date()): string {
 	try {
 		return new Intl.DateTimeFormat("en-CA", {
@@ -56,7 +54,6 @@ export function addDays(iso: string, n: number): string {
 	return new Date(toUtc(iso) + n * DAY_MS).toISOString().slice(0, 10);
 }
 
-/** Whole days from a to b (b - a). */
 export function daysBetween(a: string, b: string): number {
 	return Math.round((toUtc(b) - toUtc(a)) / DAY_MS);
 }
@@ -77,9 +74,8 @@ function lastDayOfMonth(iso: string): string {
 	return new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
 }
 
-/** Monday–Sunday week containing `iso`. */
 function mondayWeek(iso: string): { start: string; end: string } {
-	const dow = new Date(toUtc(iso)).getUTCDay(); // 0 = Sunday
+	const dow = new Date(toUtc(iso)).getUTCDay();
 	const start = addDays(iso, -((dow + 6) % 7));
 	return { start, end: addDays(start, 6) };
 }
@@ -96,7 +92,6 @@ function iso(y: number, m0: number, d: number): string {
 	return new Date(Date.UTC(y, m0, d)).toISOString().slice(0, 10);
 }
 
-/** Parses week titles like "Sep 14–20, 2026" or "Sep 28–Oct 4, 2026". */
 export function parseWeekTitle(title: string): { start: string; end: string } | null {
 	const m = title.match(
 		/^\s*([A-Za-z]+)\.?\s+(\d{1,2})\s*[–—-]\s*(?:([A-Za-z]+)\.?\s+)?(\d{1,2}),?\s*(\d{4})\s*$/,
@@ -107,11 +102,9 @@ export function parseWeekTitle(title: string): { start: string; end: string } | 
 	const endMonth = m2 ? monthIndex(m2) : startMonth;
 	if (startMonth < 0 || endMonth < 0) return null;
 	const y = Number(yStr);
-	const startYear = startMonth > endMonth ? y - 1 : y; // e.g. Dec 28 – Jan 3
+	const startYear = startMonth > endMonth ? y - 1 : y;
 	return { start: iso(startYear, startMonth, Number(d1)), end: iso(y, endMonth, Number(d2)) };
 }
-
-/* ---------------- Finding the right Week / Month page ---------------- */
 
 export interface WeekInfo {
 	id: string;
@@ -152,8 +145,6 @@ export function findMonthFor(months: NotionPage[], date: string): MonthInfo | nu
 	}
 	return null;
 }
-
-/* ---------------- Reading rows ---------------- */
 
 const num = (v: unknown): number => (typeof v === "number" && Number.isFinite(v) ? v : 0);
 const r2 = (n: number): number => Math.round(n * 100) / 100;
@@ -230,8 +221,6 @@ export function readBill(p: NotionPage): Bill {
 	};
 }
 
-/* ---------------- Loading everything from Notion ---------------- */
-
 export interface FinanceData {
 	purchases: NotionPage[];
 	expenses: NotionPage[];
@@ -241,14 +230,13 @@ export interface FinanceData {
 	weeks: NotionPage[];
 	savings: NotionPage[];
 	debts: NotionPage[];
-	/** Human-readable problems, e.g. a database the integration can't see. */
 	errors: string[];
 }
 
 function explain(e: unknown): string {
 	if (e instanceof NotionError) {
 		if (e.status === 404 || e.status === 403) {
-			return "Notion can't see this database. In Notion open it, click ••• → Connections, and add your integration.";
+			return "Notion can't see this database. Open it in Notion, choose ••• → Connections, and add the integration.";
 		}
 		return e.message;
 	}
@@ -258,7 +246,7 @@ function explain(e: unknown): string {
 export function explainWriteError(e: unknown): string {
 	if (e instanceof NotionError) {
 		if (e.status === 403 || e.status === 404) {
-			return "the integration can't edit this database (check Connections and that it has 'Insert content' + 'Update content' permissions)";
+			return "the integration can't edit this database (check Connections and Insert content / Update content permissions)";
 		}
 		if (e.status === 400) return `Notion didn't accept the entry (${e.message.slice(0, 160)})`;
 		return e.message.slice(0, 160);
@@ -277,38 +265,34 @@ export async function loadFinanceData(env: Env, today: string): Promise<FinanceD
 		}
 	};
 
-	const recent = [{ timestamp: "created_time", direction: "descending" }];
+	const recentCreated = [{ timestamp: "created_time", direction: "descending" }];
 
+	/*
+	 * Accuracy fix:
+	 * Do NOT filter purchases/incomes by their Notion Date property here.
+	 * Rows with blank Date values would disappear before readPurchase/readIncome
+	 * gets the chance to fall back to created_time.
+	 */
 	const [purchases, expenses, incomes, categories, months, weeks, savings, debts] =
 		await Promise.all([
-			run(
-				"What I Bought Today",
-				queryAll(env, DS.purchases, {
-					filter: { property: "Date", date: { on_or_after: addDays(today, -60) } },
-					sorts: [{ property: "Date", direction: "descending" }],
-					maxPages: 3,
-				}),
-			),
-			run("Expenses", queryAll(env, DS.expenses, { maxPages: 2 })),
-			run(
-				"Incomes",
-				queryAll(env, DS.incomes, {
-					filter: { property: "Date", date: { on_or_after: addDays(today, -120) } },
-					sorts: [{ property: "Date", direction: "descending" }],
-					maxPages: 2,
-				}),
-			),
-			run("Budget Database", queryAll(env, DS.categories)),
-			run("Month", queryAll(env, DS.months, { sorts: recent })),
-			run("Week", queryAll(env, DS.weeks, { sorts: recent })),
-			run("Saving For Something Big", queryAll(env, DS.savings)),
-			run("Debt Tracker", queryAll(env, DS.debts)),
+			run("What I Bought Today", queryAll(env, DS.purchases, {
+				sorts: recentCreated,
+				maxPages: 5,
+			})),
+			run("Expenses", queryAll(env, DS.expenses, { maxPages: 3 })),
+			run("Incomes", queryAll(env, DS.incomes, {
+				sorts: recentCreated,
+				maxPages: 4,
+			})),
+			run("Budget Database", queryAll(env, DS.categories, { maxPages: 2 })),
+			run("Month", queryAll(env, DS.months, { sorts: recentCreated, maxPages: 2 })),
+			run("Week", queryAll(env, DS.weeks, { sorts: recentCreated, maxPages: 2 })),
+			run("Saving For Something Big", queryAll(env, DS.savings, { maxPages: 2 })),
+			run("Debt Tracker", queryAll(env, DS.debts, { maxPages: 2 })),
 		]);
 
 	return { purchases, expenses, incomes, categories, months, weeks, savings, debts, errors };
 }
-
-/* ---------------- The snapshot Fin reads before every reply ---------------- */
 
 function pick(page: NotionPage | undefined, names: string[]): Record<string, unknown> {
 	const out: Record<string, unknown> = {};
@@ -337,20 +321,21 @@ export function buildSnapshot(data: FinanceData, today: string, includeNotionCal
 	const monthEnd = lastDayOfMonth(today);
 	const inRange = (d: string | null, a: string, b: string) => !!d && d >= a && d <= b;
 
-	/* --- this week --- */
-	const weekPurchases = purchases.filter((p) => inRange(p.date, range.start, range.end));
+	const validPurchases = purchases.filter((p) => p.amount > 0 && p.date);
+	const validIncomes = incomes.filter((i) => i.amount > 0 && i.date);
+
+	const weekPurchases = validPurchases.filter((p) => inRange(p.date, range.start, range.end));
 	const lastWeekTotal = sum(
-		purchases
+		validPurchases
 			.filter((p) => inRange(p.date, addDays(range.start, -7), addDays(range.start, -1)))
 			.map((p) => p.amount),
 	);
 	const weekIncome = sum(
-		incomes.filter((i) => inRange(i.date, range.start, range.end)).map((i) => i.amount),
+		validIncomes.filter((i) => inRange(i.date, range.start, range.end)).map((i) => i.amount),
 	);
 	const daysLeftInWeek = Math.max(daysBetween(today, range.end) + 1, 1);
 
-	/* --- this month --- */
-	const monthPurchases = purchases.filter((p) => inRange(p.date, monthStart, monthEnd));
+	const monthPurchases = validPurchases.filter((p) => inRange(p.date, monthStart, monthEnd));
 	const monthIncomes = incomes.filter(
 		(i) =>
 			i.amount > 0 &&
@@ -364,14 +349,13 @@ export function buildSnapshot(data: FinanceData, today: string, includeNotionCal
 	const purchasesMonth = sum(monthPurchases.map((p) => p.amount));
 	const billsTotal = sum(monthBills.map((b) => b.amount));
 	const billsPaid = sum(monthBills.filter((b) => b.status === "Paid").map((b) => b.amount));
-	const billsUnpaid = r2(billsTotal - billsPaid);
+	const billsUnpaid = r2(Math.max(billsTotal - billsPaid, 0));
 
 	const need = sum(monthPurchases.filter((p) => p.needOrWant === "Need").map((p) => p.amount));
 	const want = sum(monthPurchases.filter((p) => p.needOrWant === "Want").map((p) => p.amount));
 
-	const last14 = purchases.filter((p) => inRange(p.date, addDays(today, -13), today));
+	const last14 = validPurchases.filter((p) => inRange(p.date, addDays(today, -13), today));
 
-	/* --- bills --- */
 	const unpaid = bills.filter((b) => b.status !== "Paid");
 	const briefBill = (b: Bill) => ({
 		name: b.name,
@@ -384,7 +368,6 @@ export function buildSnapshot(data: FinanceData, today: string, includeNotionCal
 	const dueSoon = unpaid.filter((b) => b.due && b.due >= today && b.due <= addDays(today, 7));
 	const dueThisWeek = unpaid.filter((b) => inRange(b.due, today, range.end));
 
-	/* --- planned purchases (one-time expenses she's saving toward) --- */
 	const planned = unpaid
 		.filter((b) => b.frequency === "One-time" && b.due && b.due >= today)
 		.sort((a, b) => (a.due! < b.due! ? -1 : 1))
@@ -402,18 +385,20 @@ export function buildSnapshot(data: FinanceData, today: string, includeNotionCal
 				due_after_this_month: b.due! > monthEnd,
 			};
 		});
-	// Items due later this month are already counted in "unpaid bills this month",
-	// so only items due AFTER this month add an extra weekly set-aside.
+
 	const setAsideLater = sum(planned.filter((p) => p.due_after_this_month).map((p) => p.weekly_set_aside));
 	const setAsideAll = sum(planned.filter((p) => p.days_until > daysLeftInWeek - 1).map((p) => p.weekly_set_aside));
 
-	/* --- weekly budget estimate --- */
+	/*
+	 * Two separate numbers, intentionally:
+	 * cash_flow_so_far = money actually logged in - paid bills - purchases
+	 * flexible_left_after_all_month_bills = the above - still-unpaid month bills
+	 */
 	const cashFlowSoFar = r2(incomeMonth - billsPaid - purchasesMonth);
 	const flexibleLeftMonth = r2(cashFlowSoFar - billsUnpaid);
 	const weeksLeftInMonth = Math.max(1, Math.ceil((daysBetween(today, monthEnd) + 1) / 7));
 	const spendableRestOfWeek = r2(flexibleLeftMonth / weeksLeftInMonth - setAsideLater);
 
-	/* --- budget categories --- */
 	const categories = data.categories.map((c) => ({
 		name: titleOf(c),
 		monthly_limit: plain(c.properties["Monthly Budget Limit"]),
@@ -422,7 +407,6 @@ export function buildSnapshot(data: FinanceData, today: string, includeNotionCal
 		notion_spending: plain(c.properties["Spending"]),
 	}));
 
-	/* --- savings + debts --- */
 	const savings = data.savings.map((s) => {
 		const target = num(plain(s.properties["Target Amount"]));
 		const saved = num(plain(s.properties["Saved So Far"]));
@@ -451,21 +435,32 @@ export function buildSnapshot(data: FinanceData, today: string, includeNotionCal
 		(a, b) => num(b.interest_rate_percent) - num(a.interest_rate_percent),
 	)[0];
 
-	/* --- recent activity --- */
-	const recentPurchases = [...purchases]
+	const recentPurchases = [...validPurchases]
 		.sort((a, b) => ((b.date ?? "") + (b.createdTime ?? "")).localeCompare((a.date ?? "") + (a.createdTime ?? "")))
 		.slice(0, 15)
 		.map((p) => ({ date: p.date, item: p.item, amount: p.amount, category: p.category, need_or_want: p.needOrWant }));
+
 	const recentIncomes = incomes
 		.filter((i) => i.amount > 0)
 		.slice(0, 8)
 		.map((i) => ({ date: i.date, source: i.source, note: i.title || undefined, amount: i.amount }));
 
+	const purchaseRowsWithoutUsableDate = purchases.filter((p) => p.amount > 0 && !p.date).length;
+	const purchaseRowsWithZeroAmount = purchases.filter((p) => p.amount <= 0).length;
+
 	return {
 		today,
 		weekday: weekdayName(today),
 		notes:
-			"Income totals are sums of the Incomes sheet by date (every row counts, linked or not). Only money that has been logged is counted. There is no bank balance in Notion, so 'money left' means logged income minus logged bills and purchases.",
+			"Fin computes totals from the rows he can read in Notion. 'Cash flow so far' means logged income minus paid bills and purchases. 'Flexible left after all month bills' also reserves unpaid bills still due this month. It is not a bank balance.",
+		data_quality: {
+			purchase_rows_loaded: purchases.length,
+			purchase_rows_counted_this_month: monthPurchases.length,
+			purchase_rows_without_usable_date: purchaseRowsWithoutUsableDate,
+			purchase_rows_with_zero_amount: purchaseRowsWithZeroAmount,
+			income_rows_loaded: incomes.length,
+			expense_rows_loaded: bills.length,
+		},
 		this_week: {
 			label: weekInfo?.title ?? `${range.start} to ${range.end}`,
 			start: range.start,
@@ -476,8 +471,8 @@ export function buildSnapshot(data: FinanceData, today: string, includeNotionCal
 			purchases_by_category: groupSum(weekPurchases),
 			last_week_purchases_total: lastWeekTotal,
 			income_logged: weekIncome,
-			income_entries: incomes
-				.filter((i) => inRange(i.date, range.start, range.end) && i.amount > 0)
+			income_entries: validIncomes
+				.filter((i) => inRange(i.date, range.start, range.end))
 				.map((i) => ({ date: i.date, source: i.source, note: i.title || undefined, amount: i.amount })),
 			bills_due_this_week: sum(dueThisWeek.map((b) => b.amount)),
 			notion: includeNotionCalcs
@@ -496,8 +491,6 @@ export function buildSnapshot(data: FinanceData, today: string, includeNotionCal
 		weekly_budget: {
 			spendable_rest_of_this_week: spendableRestOfWeek,
 			per_day_rest_of_week: r2(spendableRestOfWeek / daysLeftInWeek),
-			how_it_is_calculated:
-				"(income logged this month − bills paid − purchases so far − unpaid bills this month) ÷ weeks left in the month − weekly set-aside for planned purchases due after this month",
 			weeks_left_in_month: weeksLeftInMonth,
 			weekly_set_aside_for_planned_purchases: setAsideAll,
 		},
@@ -505,6 +498,10 @@ export function buildSnapshot(data: FinanceData, today: string, includeNotionCal
 			label: monthInfo?.title ?? today.slice(0, 7),
 			income_logged: incomeMonth,
 			income_by_source: incomeBySource(monthIncomes),
+			// New clearer names:
+			purchases_total: purchasesMonth,
+			purchases_count: monthPurchases.length,
+			// Backward-compatible name used by older Fin prompts:
 			daily_purchases_total: purchasesMonth,
 			purchases_by_category: groupSum(monthPurchases),
 			need_total: need,
@@ -514,8 +511,19 @@ export function buildSnapshot(data: FinanceData, today: string, includeNotionCal
 			bills_total: billsTotal,
 			bills_paid: billsPaid,
 			bills_unpaid: billsUnpaid,
+			cash_flow_so_far: cashFlowSoFar,
+			flexible_left_after_all_month_bills: flexibleLeftMonth,
+			// Backward-compatible names used by the current src/index.ts:
 			money_after_bills_and_purchases_so_far: cashFlowSoFar,
 			flexible_money_left_after_unpaid_bills: flexibleLeftMonth,
+			calculation: {
+				income_logged: incomeMonth,
+				minus_paid_bills: billsPaid,
+				minus_purchases: purchasesMonth,
+				equals_cash_flow_so_far: cashFlowSoFar,
+				minus_unpaid_bills: billsUnpaid,
+				equals_flexible_left_after_all_month_bills: flexibleLeftMonth,
+			},
 			notion: includeNotionCalcs
 				? pick(monthInfo?.page, [
 						"Monthly Incomes",
