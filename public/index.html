@@ -1,63 +1,73 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Fin</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Patrick+Hand&display=swap" rel="stylesheet">
-<style>
-:root{--cream:#fffaf1;--paper:#f5eee2;--ink:#403a34;--muted:#81786e;--sage:#91a773;--sage2:#667a52;--soft:#e2e9d7;--line:#dbd0bf}
-*{box-sizing:border-box;margin:0;padding:0}body{min-height:100vh;background:#1c1b17;font-family:Nunito,system-ui,sans-serif;color:var(--ink);display:flex;justify-content:center;padding:14px}
-.app{width:min(960px,100%);overflow:hidden;border-radius:28px;background:var(--cream);box-shadow:0 28px 80px #0007}
-.hero{height:520px;position:relative;background:url("fin-wizard-scene.png") center 38%/cover no-repeat}
-.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 67%,#211c16a8)}
-.today{position:absolute;z-index:5;right:22px;top:20px;background:#fffaf1ee;border:1px solid #8c765329;border-radius:999px;padding:8px 13px;box-shadow:0 8px 22px #0002;font-size:12px;font-weight:800}
-.today b{color:var(--sage2);font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin-right:6px}
-.magic{position:absolute;z-index:4;width:5px;height:5px;border-radius:50%;background:#ffe4a2;box-shadow:0 0 14px 4px #ffe4a266;animation:float 3.6s ease-in-out infinite}
-.m1{left:39%;top:34%}.m2{left:57%;top:42%;animation-delay:-1.1s}.m3{left:68%;top:31%;animation-delay:-2s}
-@keyframes float{50%{transform:translateY(-14px) scale(1.3);opacity:1}0%,100%{opacity:.35}}
-#fin{position:absolute;z-index:5;left:18%;top:21%;width:34%;height:51%;transform-origin:50% 60%;pointer-events:none}
-#fin.income-flip{animation:flip .9s cubic-bezier(.2,.8,.25,1)}
-@keyframes flip{0%{transform:rotate(0) translateY(0)}35%{transform:rotate(145deg) translateY(-24px)}70%{transform:rotate(310deg) translateY(-12px)}100%{transform:rotate(360deg) translateY(0)}}
-.chat{position:relative;z-index:8;margin-top:-52px;border-radius:28px 28px 0 0;background:#fffaf1fa;padding:20px 22px 24px;box-shadow:0 -14px 35px #0002}
-.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:12px}.title{font:22px "Patrick Hand",cursive;color:#5e574f}
-#clear-chat{border:1px solid #c9c0b1;background:#eef2e5;color:#59674d;border-radius:999px;padding:7px 12px;font-size:11px;font-weight:800;cursor:pointer}
-.messages{display:flex;flex-direction:column;gap:11px;min-height:165px;max-height:430px;overflow:auto;padding:4px 2px 10px}
-.message{font-size:14.5px;line-height:1.5;overflow-wrap:anywhere}.user-message{align-self:flex-end;max-width:86%;padding:11px 14px;background:var(--soft);font-weight:700;border-radius:19px 19px 6px 19px}
-.assistant-message{align-self:flex-start;width:min(92%,700px);padding:13px 15px;background:var(--paper);border:1px solid #e4dacb;border-radius:19px 19px 19px 6px}
-.assistant-message h3{font-size:15px;color:#34402f;margin:2px 0 8px}.assistant-message h4{font-size:11px;color:var(--sage2);margin:10px 0 5px;text-transform:uppercase;letter-spacing:.06em}
-.assistant-message p+p{margin-top:7px}.assistant-message strong{font-weight:800;color:#2f382c}.assistant-message ul,.assistant-message ol{padding-left:20px;margin:6px 0}.assistant-message li{margin:4px 0}
-.callout{margin-top:9px;padding:9px 11px;border-radius:12px;background:#edf2e6;border-left:3px solid var(--sage)}.callout.warn{background:#f4e8e4;border-left-color:#b77d74}.callout-title{display:block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--sage2);margin-bottom:2px}
-.divider{height:1px;background:#ded5c7;margin:11px 0}
-.typing{display:none;color:var(--muted);font-size:12px;padding-left:4px}.typing.visible{display:block}
-.chips{display:flex;flex-wrap:wrap;gap:7px}.chips[hidden]{display:none}.chip{border:1px solid #d7ccbb;background:#fffaf2;color:#5e574e;border-radius:999px;padding:7px 11px;font:600 12px Nunito;cursor:pointer}
-.input{display:flex;gap:8px;align-items:flex-end;margin-top:12px;border:1px solid var(--line);background:white;border-radius:21px;padding:6px}textarea{flex:1;min-height:46px;max-height:120px;border:0;outline:0;resize:none;padding:12px 10px;font:14px Nunito;color:var(--ink)}
-#send-button{width:48px;height:48px;border:0;border-radius:50%;background:var(--sage);color:white;font-size:0;cursor:pointer}#send-button:before{content:"➤";font-size:21px}footer{text-align:center;padding:0 18px 17px;background:var(--cream);color:#8a8278;font:15px "Patrick Hand"}
-@media(max-width:700px){body{padding:7px}.hero{height:440px}.today{right:10px;top:10px}.today b{display:none}.chat{margin-top:-38px;padding:16px 13px 20px}.assistant-message{width:95%}}
-@media(prefers-reduced-motion:reduce){.magic,#fin.income-flip{animation:none!important}}
-</style>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="theme-color" content="#29372f" />
+	<title>Fin</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Patrick+Hand&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<main class="app">
-<section class="hero">
-<div class="today"><b>Today</b><span id="today-date"></span></div>
-<span class="magic m1"></span><span class="magic m2"></span><span class="magic m3"></span>
-<div id="fin" data-state="idle" aria-hidden="true"></div>
-</section>
-<section class="chat">
-<div class="toolbar"><div class="title">✦ Fin's spellbook</div><button id="clear-chat">+ New conversation</button></div>
-<div id="chat-messages" class="messages" aria-live="polite"></div>
-<div id="typing-indicator" class="typing">Fin is checking the numbers...</div>
-<div class="chips" id="chips">
-<button class="chip" data-q="How much room do I have this week?">This week's room</button>
-<button class="chip" data-q="What bills are coming up?">Upcoming bills</button>
-<button class="chip" data-q="How much have I spent this month?">Monthly spending</button>
-<button class="chip" data-q="Help me plan for something I want to buy.">Plan something</button>
-</div>
-<div class="input"><textarea id="user-input" rows="1" autofocus placeholder="Tell Fin what happened, or ask about your plan..."></textarea><button id="send-button" aria-label="Send">Ask</button></div>
-</section>
-<footer>Small steps. Brighter days. ♡</footer>
-</main>
-<script src="chat.js"></script>
-</body></html>
+	<div class="ambient-bg" aria-hidden="true"></div>
+
+	<main class="app" id="app">
+		<section class="conversation-pane">
+			<header class="topbar">
+				<div class="brand">
+					<div class="brand-name">Fin</div>
+					<div class="brand-sub">your friendly finance familiar ♡</div>
+				</div>
+				<button id="clear-chat" class="new-chat" type="button">＋ New conversation</button>
+			</header>
+
+			<section class="fin-scene" id="fin-scene" aria-label="Fin, your wizard-like financial familiar">
+				<div class="fin-art-wrap" id="fin" data-state="idle">
+					<img src="fin-stage.png" alt="Fin wearing round glasses and pointing a wand toward a magical book" class="fin-art" />
+					<span class="blink-lid" aria-hidden="true"></span>
+					<span class="book-page p1" aria-hidden="true"></span>
+					<span class="book-page p2" aria-hidden="true"></span>
+					<span class="magic-dot d1" aria-hidden="true"></span>
+					<span class="magic-dot d2" aria-hidden="true"></span>
+					<span class="magic-dot d3" aria-hidden="true"></span>
+				</div>
+			</section>
+
+			<section class="chat-card">
+				<div id="chat-messages" class="messages" aria-live="polite"></div>
+				<div id="typing-indicator" class="typing-indicator">Fin is checking the planner...</div>
+
+				<div id="chips" class="chips">
+					<button class="chip" type="button" data-q="How's my spending this month?">How's my spending?</button>
+					<button class="chip" type="button" data-q="What bills are coming up?">What are my bills?</button>
+					<button class="chip" type="button" data-q="Show me my savings progress.">Show my savings</button>
+					<button class="chip" type="button" data-q="How much room do I have this week?">This week's room</button>
+				</div>
+
+				<div class="composer">
+					<textarea id="user-input" rows="1" autofocus placeholder="Tell Fin anything... a purchase, income, goal, or question."></textarea>
+					<button id="send-button" type="button" aria-label="Send message">➤</button>
+				</div>
+			</section>
+		</section>
+
+		<aside id="insight-panel" class="insight-panel" aria-hidden="true">
+			<div class="insight-header">
+				<div>
+					<div class="eyebrow">Fin's chalkboard</div>
+					<h2 id="insight-title">Your breakdown</h2>
+					<p id="insight-subtitle"></p>
+				</div>
+				<button id="close-insight" class="close-insight" type="button" aria-label="Close visualization">×</button>
+			</div>
+			<div id="insight-content" class="insight-content"></div>
+			<div class="chalk-note">Fin only draws this from the current Notion snapshot. ✦</div>
+		</aside>
+	</main>
+
+	<script src="visualizations.js"></script>
+	<script src="chat.js"></script>
+</body>
+</html>
