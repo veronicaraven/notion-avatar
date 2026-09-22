@@ -1,73 +1,161 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<meta name="theme-color" content="#29372f" />
-	<title>Fin</title>
-	<link rel="preconnect" href="https://fonts.googleapis.com" />
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-	<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Patrick+Hand&display=swap" rel="stylesheet" />
-	<link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#26352d" />
+  <title>Fin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Patrick+Hand&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-	<div class="ambient-bg" aria-hidden="true"></div>
+  <main class="app" id="app">
+    <section class="conversation-pane">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-name">Fin</div>
+          <div class="brand-sub">your friendly finance familiar ♡</div>
+        </div>
+        <button id="clear-chat" class="new-chat" type="button">＋ New conversation</button>
+      </header>
 
-	<main class="app" id="app">
-		<section class="conversation-pane">
-			<header class="topbar">
-				<div class="brand">
-					<div class="brand-name">Fin</div>
-					<div class="brand-sub">your friendly finance familiar ♡</div>
-				</div>
-				<button id="clear-chat" class="new-chat" type="button">＋ New conversation</button>
-			</header>
+      <section class="room-stage" aria-label="Fin's cozy magical study">
+        <div class="window" aria-hidden="true"><span class="moon"></span><span class="hill h1"></span><span class="hill h2"></span></div>
+        <div class="shelf shelf-a" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="shelf shelf-b" aria-hidden="true"><span></span><span></span></div>
+        <div class="vine vine-a" aria-hidden="true"></div>
+        <div class="vine vine-b" aria-hidden="true"></div>
+        <div class="lamp" aria-hidden="true"><span></span></div>
+        <div class="desk" aria-hidden="true"></div>
+        <div class="cat" aria-hidden="true"><span class="cat-ear e1"></span><span class="cat-ear e2"></span><span class="cat-tail"></span></div>
 
-			<section class="fin-scene" id="fin-scene" aria-label="Fin, your wizard-like financial familiar">
-				<div class="fin-art-wrap" id="fin" data-state="idle">
-					<img src="fin-stage.png" alt="Fin wearing round glasses and pointing a wand toward a magical book" class="fin-art" />
-					<span class="blink-lid" aria-hidden="true"></span>
-					<span class="book-page p1" aria-hidden="true"></span>
-					<span class="book-page p2" aria-hidden="true"></span>
-					<span class="magic-dot d1" aria-hidden="true"></span>
-					<span class="magic-dot d2" aria-hidden="true"></span>
-					<span class="magic-dot d3" aria-hidden="true"></span>
-				</div>
-			</section>
+        <div id="fin" class="fin-character" data-state="idle" aria-label="Fin, a playful wizard financial familiar">
+          <svg viewBox="0 0 360 390" role="img" aria-hidden="true">
+            <defs>
+              <radialGradient id="fur" cx="45%" cy="35%" r="70%"><stop offset="0" stop-color="#fff9ed"/><stop offset="1" stop-color="#eadcc8"/></radialGradient>
+              <linearGradient id="hat" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#41543d"/><stop offset="1" stop-color="#26372d"/></linearGradient>
+              <linearGradient id="cloak" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6f8662"/><stop offset="1" stop-color="#3f5845"/></linearGradient>
+              <filter id="glow"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#1a1e18" flood-opacity=".28"/></filter>
+            </defs>
 
-			<section class="chat-card">
-				<div id="chat-messages" class="messages" aria-live="polite"></div>
-				<div id="typing-indicator" class="typing-indicator">Fin is checking the planner...</div>
+            <g class="fin-float" filter="url(#shadow)">
+              <ellipse cx="176" cy="345" rx="82" ry="12" fill="#182018" opacity=".20"/>
 
-				<div id="chips" class="chips">
-					<button class="chip" type="button" data-q="How's my spending this month?">How's my spending?</button>
-					<button class="chip" type="button" data-q="What bills are coming up?">What are my bills?</button>
-					<button class="chip" type="button" data-q="Show me my savings progress.">Show my savings</button>
-					<button class="chip" type="button" data-q="How much room do I have this week?">This week's room</button>
-				</div>
+              <g class="tail">
+                <path d="M104 247 C53 246 48 300 78 321 C92 332 114 323 115 303 C115 291 106 284 94 288 C83 291 79 303 87 311 C64 303 63 274 88 266 C96 263 104 264 112 266Z" fill="url(#fur)"/>
+              </g>
 
-				<div class="composer">
-					<textarea id="user-input" rows="1" autofocus placeholder="Tell Fin anything... a purchase, income, goal, or question."></textarea>
-					<button id="send-button" type="button" aria-label="Send message">➤</button>
-				</div>
-			</section>
-		</section>
+              <path class="cloak" d="M113 216 C92 239 87 290 105 325 C136 345 204 345 238 322 C252 283 245 239 221 214 C194 197 140 197 113 216Z" fill="url(#cloak)"/>
+              <path d="M126 223 C145 238 197 238 218 221 C215 252 214 292 203 326 C175 337 141 334 118 324 C111 290 113 252 126 223Z" fill="#7d9270" opacity=".65"/>
 
-		<aside id="insight-panel" class="insight-panel" aria-hidden="true">
-			<div class="insight-header">
-				<div>
-					<div class="eyebrow">Fin's chalkboard</div>
-					<h2 id="insight-title">Your breakdown</h2>
-					<p id="insight-subtitle"></p>
-				</div>
-				<button id="close-insight" class="close-insight" type="button" aria-label="Close visualization">×</button>
-			</div>
-			<div id="insight-content" class="insight-content"></div>
-			<div class="chalk-note">Fin only draws this from the current Notion snapshot. ✦</div>
-		</aside>
-	</main>
+              <ellipse cx="174" cy="202" rx="78" ry="68" fill="url(#fur)"/>
+              <path d="M105 196 C82 184 73 202 90 218 C98 223 107 218 113 210Z" fill="#eadbc7"/>
+              <path d="M244 195 C267 184 275 203 258 218 C250 223 241 217 236 209Z" fill="#eadbc7"/>
 
-	<script src="visualizations.js"></script>
-	<script src="chat.js"></script>
+              <g class="face-eyes">
+                <g class="eye eye-left"><ellipse cx="145" cy="198" rx="12" ry="16" fill="#433a32"/><circle cx="149" cy="192" r="4" fill="#fff"/></g>
+                <g class="eye eye-right"><ellipse cx="204" cy="198" rx="12" ry="16" fill="#433a32"/><circle cx="208" cy="192" r="4" fill="#fff"/></g>
+              </g>
+              <g class="blink-eyes"><path d="M133 199 Q145 207 157 199" fill="none" stroke="#433a32" stroke-width="5" stroke-linecap="round"/><path d="M192 199 Q204 207 216 199" fill="none" stroke="#433a32" stroke-width="5" stroke-linecap="round"/></g>
+
+              <ellipse cx="121" cy="220" rx="17" ry="9" fill="#f2a7a1" opacity=".65"/>
+              <ellipse cx="228" cy="220" rx="17" ry="9" fill="#f2a7a1" opacity=".65"/>
+              <path class="mouth-smile" d="M159 221 Q174 238 190 221" fill="#b46f67" stroke="#60453f" stroke-width="3" stroke-linejoin="round"/>
+
+              <g class="glasses">
+                <circle cx="145" cy="198" r="27" fill="none" stroke="#5c4836" stroke-width="5"/>
+                <circle cx="204" cy="198" r="27" fill="none" stroke="#5c4836" stroke-width="5"/>
+                <path d="M172 198 Q175 194 178 198" stroke="#5c4836" stroke-width="5" fill="none"/>
+                <path d="M118 192 L101 184 M231 192 L248 184" stroke="#5c4836" stroke-width="4" stroke-linecap="round"/>
+              </g>
+
+              <g class="hat-group">
+                <path d="M92 159 C112 151 228 151 251 160 C224 178 119 179 92 159Z" fill="#26372d"/>
+                <path class="hat-tip" d="M112 156 C112 105 138 54 189 23 C179 73 209 113 238 151 C198 164 148 165 112 156Z" fill="url(#hat)"/>
+                <path d="M111 145 C145 155 201 156 235 145 L242 157 C201 171 146 171 105 157Z" fill="#8f6f62"/>
+                <path d="M174 145 C176 135 183 128 194 124 C192 137 199 145 209 150 C197 152 185 150 174 145Z" fill="#8fa875"/>
+                <circle cx="150" cy="147" r="10" fill="#f3e2c8"/><circle cx="150" cy="147" r="4" fill="#d7b866"/>
+                <circle cx="220" cy="151" r="8" fill="#f3e2c8"/><circle cx="220" cy="151" r="3" fill="#d7b866"/>
+                <path d="M165 78 A16 16 0 1 0 181 94 A13 13 0 1 1 165 78Z" fill="#e9c267"/>
+                <path d="M132 100 C146 86 161 82 173 86 C160 94 153 108 154 121 C144 112 136 106 132 100Z" fill="#839d6f"/>
+              </g>
+
+              <g class="left-arm"><path d="M112 252 C89 253 81 275 97 286 C110 292 123 281 135 267Z" fill="url(#fur)"/><ellipse cx="101" cy="276" rx="15" ry="12" fill="#efdcc5"/></g>
+
+              <g class="wand-arm">
+                <path d="M225 245 C246 236 261 246 259 263 C257 277 241 280 220 270Z" fill="url(#fur)"/>
+                <ellipse cx="249" cy="262" rx="14" ry="11" fill="#efdcc5"/>
+                <line x1="252" y1="258" x2="316" y2="204" stroke="#8a6645" stroke-width="6" stroke-linecap="round"/>
+                <g class="wand-star" filter="url(#glow)"><path d="M319 188 l7 13 15 5-15 6-7 14-7-14-15-6 15-5Z" fill="#f5d980" stroke="#fff2bd" stroke-width="2"/></g>
+              </g>
+
+              <g fill="#e7cf80" class="cloak-stars"><circle cx="147" cy="277" r="3"/><circle cx="191" cy="304" r="2.5"/><path d="M214 270 l3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/></g>
+            </g>
+          </svg>
+        </div>
+
+        <div id="magic-book" class="magic-book" aria-hidden="true">
+          <svg viewBox="0 0 230 170">
+            <defs><filter id="bookGlow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+            <g class="book-float">
+              <ellipse cx="115" cy="150" rx="67" ry="10" fill="#1f2018" opacity=".18"/>
+              <path d="M113 46 C79 23 43 31 21 47 L33 126 C61 111 87 115 113 133Z" fill="#2d2d27" stroke="#bb8d56" stroke-width="5"/>
+              <path d="M116 46 C151 23 187 31 208 47 L197 126 C169 111 143 115 116 133Z" fill="#2d2d27" stroke="#bb8d56" stroke-width="5"/>
+              <path d="M113 49 C83 34 55 36 35 49 L43 111 C67 102 89 107 113 121Z" fill="#f2e3bd"/>
+              <path d="M116 49 C145 34 174 36 194 49 L186 111 C162 102 140 107 116 121Z" fill="#f8ebc9"/>
+              <line x1="114.5" y1="47" x2="114.5" y2="128" stroke="#b59668" stroke-width="3"/>
+              <g class="page-lines" stroke="#b8a781" stroke-width="2" opacity=".55"><path d="M49 61 C66 56 87 58 103 65"/><path d="M47 74 C67 68 89 71 104 78"/><path d="M46 87 C68 81 89 84 104 91"/><path d="M128 64 C146 58 169 57 184 62"/><path d="M128 78 C146 71 168 70 184 75"/><path d="M128 91 C146 84 168 83 184 88"/></g>
+              <g class="book-leaf" fill="#8ca474"><path d="M111 77 C95 63 80 62 68 69 C80 72 90 80 95 93 C100 85 105 80 111 77Z"/><path d="M118 77 C134 63 149 62 161 69 C149 72 139 80 134 93 C129 85 124 80 118 77Z"/></g>
+              <g class="page-flipper one"><path d="M116 51 C145 35 171 38 190 49 L181 111 C159 101 139 106 116 121Z" fill="#fff0c9"/></g>
+              <g class="page-flipper two"><path d="M116 51 C145 35 171 38 190 49 L181 111 C159 101 139 106 116 121Z" fill="#f7e6bb"/></g>
+              <g class="book-spark" filter="url(#bookGlow)" fill="#f6d575"><circle cx="29" cy="29" r="4"/><circle cx="203" cy="26" r="3"/><path d="M208 96 l4 9 9 4-9 4-4 9-4-9-9-4 9-4Z"/></g>
+            </g>
+          </svg>
+        </div>
+
+        <div class="speech-card">
+          <span class="speech-kicker">Fin says</span>
+          <strong>Tell me what changed, or ask me to pull up the numbers.</strong>
+          <span>I’ll keep the conversation here and use the chalkboard when a visual will help.</span>
+        </div>
+      </section>
+
+      <section class="chat-card">
+        <div id="chat-messages" class="messages" aria-live="polite"></div>
+        <div id="typing-indicator" class="typing-indicator">Fin is checking your planner...</div>
+
+        <div id="chips" class="chips">
+          <button class="chip" type="button" data-q="How's my spending this month?">How's my spending?</button>
+          <button class="chip" type="button" data-q="What bills are coming up?">What are my bills?</button>
+          <button class="chip" type="button" data-q="Show me my savings progress.">Show my savings</button>
+          <button class="chip" type="button" data-q="How much room do I have this week?">This week's room</button>
+        </div>
+
+        <div class="composer">
+          <textarea id="user-input" rows="1" autofocus placeholder="Message Fin... a purchase, income, goal, bill, or question."></textarea>
+          <button id="send-button" type="button" aria-label="Send message">➤</button>
+        </div>
+      </section>
+    </section>
+
+    <aside id="insight-panel" class="insight-panel" aria-hidden="true">
+      <div class="insight-header">
+        <div>
+          <div class="eyebrow">Fin's chalkboard</div>
+          <h2 id="insight-title">Your breakdown</h2>
+          <p id="insight-subtitle"></p>
+        </div>
+        <button id="close-insight" class="close-insight" type="button" aria-label="Close visualization">×</button>
+      </div>
+      <div id="insight-content" class="insight-content"></div>
+      <div class="chalk-note">Live numbers come from your current Notion snapshot. ✦</div>
+    </aside>
+  </main>
+
+  <script src="visualizations.js"></script>
+  <script src="chat.js"></script>
 </body>
 </html>
