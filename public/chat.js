@@ -1,113 +1,32 @@
-const chatMessages=document.getElementById("chat-messages");
-const userInput=document.getElementById("user-input");
-const sendButton=document.getElementById("send-button");
-const typingIndicator=document.getElementById("typing-indicator");
-const fin=document.getElementById("fin");
-const magicBook=document.getElementById("magic-book");
-const chips=document.getElementById("chips");
-const clearChatButton=document.getElementById("clear-chat");
-const app=document.getElementById("app");
-const insightPanel=document.getElementById("insight-panel");
-const insightTitle=document.getElementById("insight-title");
-const insightSubtitle=document.getElementById("insight-subtitle");
-const insightContent=document.getElementById("insight-content");
-const closeInsight=document.getElementById("close-insight");
-
-const CHAT_STORAGE_KEY="fin_chat_history_v5";
-const CONVERSATION_ID_KEY="fin_conversation_id_v1";
-const MAX_STORED_MESSAGES=30;
-const WELCOME="Hi! I’m Fin. Tell me what changed, or ask me to pull something up from your planner. ✦";
-let isProcessing=false;
-let conversationId=getConversationId();
-let chatHistory=loadHistory();
-
-function createId(){return globalThis.crypto?.randomUUID?.()||`${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`}
-function browserTimezone(){try{return Intl.DateTimeFormat().resolvedOptions().timeZone||"America/Denver"}catch{return"America/Denver"}}
-function getConversationId(){try{let id=localStorage.getItem(CONVERSATION_ID_KEY);if(!id){id=createId();localStorage.setItem(CONVERSATION_ID_KEY,id)}return id}catch{return createId()}}
-function validMessage(m){return m&&(m.role==="user"||m.role==="assistant")&&typeof m.content==="string"&&m.content.trim()}
-function loadHistory(){try{const x=JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY)||"[]");return Array.isArray(x)?x.filter(validMessage).slice(-MAX_STORED_MESSAGES):[]}catch{return[]}}
-function saveHistory(){try{localStorage.setItem(CHAT_STORAGE_KEY,JSON.stringify(chatHistory.slice(-MAX_STORED_MESSAGES)))}catch{}}
-function remember(role,content){if(!content?.trim())return;chatHistory.push({role,content:content.slice(0,4000)});chatHistory=chatHistory.slice(-MAX_STORED_MESSAGES);saveHistory()}
-
-function setFinState(state){if(fin)fin.dataset.state=state}
-function replayClass(el,name,duration){if(!el)return;el.classList.remove(name);void el.offsetWidth;el.classList.add(name);window.setTimeout(()=>el.classList.remove(name),duration)}
-function runFinAnimation(name){
-  if(name==="income-success"){
-    replayClass(fin,"income-celebrate",1150);
-    replayClass(magicBook,"flip",1450);
-  }else if(name==="notion-success"){
-    replayClass(fin,"success-pop",850);
-  }
-}
-
-function openVisualization(v){
-  if(!v||!window.FinVisualizations)return;
-  insightTitle.textContent=v.title||"Your breakdown";
-  insightSubtitle.textContent=v.subtitle||"";
-  insightContent.innerHTML=window.FinVisualizations.render(v);
-  app.classList.add("insight-open");
-  insightPanel.setAttribute("aria-hidden","false");
-  setFinState("visualizing");
-}
-function closeVisualization(){
-  app.classList.remove("insight-open");
-  insightPanel.setAttribute("aria-hidden","true");
-  if(!isProcessing)setFinState("idle");
-}
-closeInsight?.addEventListener("click",closeVisualization);
-
-function renderConversation(){
-  chatMessages.innerHTML="";
-  if(!chatHistory.length){addMessage("assistant",WELCOME);chips.hidden=false;return}
-  chatHistory.forEach(m=>addMessage(m.role,m.content));
-  chips.hidden=true;
-}
-renderConversation();
-window.addEventListener("load",()=>{if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches)replayClass(fin,"enter",1100)});
-
-userInput?.addEventListener("input",function(){this.style.height="auto";this.style.height=`${Math.min(this.scrollHeight,125)}px`});
-userInput?.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage()}});
-sendButton?.addEventListener("click",sendMessage);
-chips?.addEventListener("click",e=>{const c=e.target.closest(".chip");if(!c||isProcessing)return;userInput.value=c.dataset.q||"";sendMessage()});
-clearChatButton?.addEventListener("click",()=>{if(isProcessing)return;chatHistory=[];try{localStorage.removeItem(CHAT_STORAGE_KEY);conversationId=createId();localStorage.setItem(CONVERSATION_ID_KEY,conversationId)}catch{}closeVisualization();renderConversation();userInput?.focus()});
-
-async function sendMessage(){
-  if(!userInput||!sendButton)return;
-  const message=userInput.value.trim();if(!message||isProcessing)return;
-  const requestId=createId();
-  isProcessing=true;userInput.disabled=true;sendButton.disabled=true;
-  addMessage("user",message);remember("user",message);chips.hidden=true;userInput.value="";userInput.style.height="auto";
-  typingIndicator?.classList.add("visible");setFinState("thinking");
-  try{
-    const response=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:chatHistory,timezone:browserTimezone(),conversationId,clientId:conversationId,memoryKey:conversationId,requestId})});
-    if(!response.ok){let detail="";try{detail=(await response.json())?.error||""}catch{}throw new Error(detail||`Fin returned ${response.status}`)}
-    if(!response.body)throw new Error("Fin returned an empty response.");
-    const el=document.createElement("div");el.className="message assistant-message";chatMessages.appendChild(el);
-    let responseText="",buffer="",done=false;const reader=response.body.getReader(),decoder=new TextDecoder();
-    const append=content=>{if(!content)return;responseText+=content;renderRichAssistant(el,responseText);typingIndicator?.classList.remove("visible");if(!app.classList.contains("insight-open"))setFinState("talking");scrollBottom()};
-    while(!done){const chunk=await reader.read();if(chunk.done){buffer+=decoder.decode();const parsed=consumeSseEvents(`${buffer}\n\n`);done=handleEvents(parsed.events,append)||done;break}buffer+=decoder.decode(chunk.value,{stream:true});const parsed=consumeSseEvents(buffer);buffer=parsed.buffer;done=handleEvents(parsed.events,append)}
-    if(!responseText.trim())throw new Error("Fin didn't return any text.");
-    renderRichAssistant(el,responseText);remember("assistant",responseText.trim());
-  }catch(error){console.error("Fin chat error:",error);addMessage("assistant","I couldn’t reach my notes just then. Your message is still here, so you can try again.")}
-  finally{typingIndicator?.classList.remove("visible");if(!app.classList.contains("insight-open"))setFinState("idle");isProcessing=false;userInput.disabled=false;sendButton.disabled=false;userInput.focus()}
-}
-
-function handleEvents(events,appendText){
-  for(const data of events){
-    if(data==="[DONE]")return true;
-    try{
-      const json=JSON.parse(data);
-      if(json.type==="visualization"&&json.visualization){openVisualization(json.visualization);continue}
-      if(json.type==="animation"&&json.name){runFinAnimation(json.name);continue}
-      const content=typeof json.response==="string"?json.response:json.choices?.[0]?.delta?.content||json.content||"";
-      if(content)appendText(content);
-    }catch(error){console.warn("Could not parse Fin stream:",data,error)}
-  }
-  return false;
-}
-function consumeSseEvents(buffer){const normalized=buffer.replace(/\r/g,"");const events=[];let remaining=normalized,idx;while((idx=remaining.indexOf("\n\n"))!==-1){const raw=remaining.slice(0,idx);remaining=remaining.slice(idx+2);const lines=raw.split("\n").filter(line=>line.startsWith("data:")).map(line=>line.slice(5).trimStart());if(lines.length)events.push(lines.join("\n"))}return{events,buffer:remaining}}
-function addMessage(role,content){if(!chatMessages)return;const el=document.createElement("div");el.className=`message ${role}-message`;if(role==="assistant")renderRichAssistant(el,content);else{const p=document.createElement("p");p.textContent=content;el.appendChild(p)}chatMessages.appendChild(el);scrollBottom()}
-function scrollBottom(){if(chatMessages)chatMessages.scrollTop=chatMessages.scrollHeight}
-
-function renderRichAssistant(container,source){container.replaceChildren();const lines=source.replace(/\r/g,"").split("\n");let list=null,listType=null;const flush=()=>{list=null;listType=null};for(const raw of lines){const t=raw.trim();if(!t){flush();continue}if(t==="---"){flush();const d=document.createElement("div");d.className="divider";container.appendChild(d);continue}if(t.startsWith("### ")){flush();const h=document.createElement("h3");appendInline(h,t.slice(4));container.appendChild(h);continue}if(t.startsWith("#### ")){flush();const h=document.createElement("h4");appendInline(h,t.slice(5));container.appendChild(h);continue}let m=t.match(/^[-•]\s+(.+)$/);if(m){if(!list||listType!=="ul"){list=document.createElement("ul");listType="ul";container.appendChild(list)}const li=document.createElement("li");appendInline(li,m[1]);list.appendChild(li);continue}m=t.match(/^\d+[.)]\s+(.+)$/);if(m){if(!list||listType!=="ol"){list=document.createElement("ol");listType="ol";container.appendChild(list)}const li=document.createElement("li");appendInline(li,m[1]);list.appendChild(li);continue}m=t.match(/^(TIP|NOTE|WATCH|HEADS UP):\s*(.+)$/i);if(m){flush();const box=document.createElement("div");box.className="callout"+(/WATCH|HEADS UP/i.test(m[1])?" warn":"");const title=document.createElement("span");title.className="callout-title";title.textContent=m[1];const body=document.createElement("div");appendInline(body,m[2]);box.append(title,body);container.appendChild(box);continue}flush();const p=document.createElement("p");appendInline(p,t);container.appendChild(p)}}
-function appendInline(parent,text){const re=/(\*\*[^*]+\*\*|`[^`]+`)/g;let last=0,m;while((m=re.exec(text))){if(m.index>last)parent.append(document.createTextNode(text.slice(last,m.index)));const token=m[0];if(token.startsWith("**")){const s=document.createElement("strong");s.textContent=token.slice(2,-2);parent.appendChild(s)}else{const c=document.createElement("code");c.textContent=token.slice(1,-1);parent.appendChild(c)}last=m.index+token.length}if(last<text.length)parent.append(document.createTextNode(text.slice(last)))}
+const messagesEl=document.getElementById("chat-messages"),input=document.getElementById("user-input"),sendBtn=document.getElementById("send-button"),typing=document.getElementById("typing-indicator"),chips=document.getElementById("chips"),clearBtn=document.getElementById("clear-chat"),fin=document.getElementById("fin-wrap"),book=document.getElementById("book-wrap"),heroSpeech=document.getElementById("hero-speech");
+const HISTORY="fin_chat_history_v4",CID="fin_conversation_id_v1";let busy=false,conversationId=getConversationId(),history=loadHistory();
+function uid(){return globalThis.crypto?.randomUUID?.()||`${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`}
+function getConversationId(){try{let id=localStorage.getItem(CID);if(!id){id=uid();localStorage.setItem(CID,id)}return id}catch{return uid()}}
+function tz(){try{return Intl.DateTimeFormat().resolvedOptions().timeZone||"America/Denver"}catch{return"America/Denver"}}
+function loadHistory(){try{const p=JSON.parse(localStorage.getItem(HISTORY)||"[]");return Array.isArray(p)?p.filter(m=>m&&["user","assistant"].includes(m.role)&&typeof m.content==="string").slice(-30):[]}catch{return[]}}
+function saveHistory(){try{localStorage.setItem(HISTORY,JSON.stringify(history.slice(-30)))}catch{}}
+function remember(role,content){if(!content?.trim())return;history.push({role,content:content.slice(0,5000)});history=history.slice(-30);saveHistory()}
+function setState(s){fin.dataset.state=s}
+function blink(){if(document.hidden)return;fin.classList.add("blinking");setTimeout(()=>fin.classList.remove("blinking"),360)}
+function scheduleBlink(){setTimeout(()=>{blink();scheduleBlink()},2600+Math.random()*3000)}
+window.addEventListener("load",()=>{fin.classList.add("entering");setTimeout(()=>fin.classList.remove("entering"),1000);setTimeout(scheduleBlink,1700)});
+function incomeCelebration(){fin.classList.remove("income-success");book.classList.remove("flip-pages");void fin.offsetWidth;fin.classList.add("income-success");book.classList.add("flip-pages");setTimeout(()=>{fin.classList.remove("income-success");book.classList.remove("flip-pages")},1600)}
+function notionSuccess(){book.classList.add("flip-pages");setTimeout(()=>book.classList.remove("flip-pages"),900)}
+document.addEventListener("fin:visualization-close",()=>{setState("idle");heroSpeech.innerHTML="<strong>Hi there! I’m Fin.</strong><span>Tell me what’s on your mind, and we’ll make sense of it together. ♡</span>"});
+function renderHistory(){messagesEl.innerHTML="";if(!history.length){add("assistant","Hi! I’m Fin. Tell me what happened with your money, or ask me what your week looks like. 🌿");chips.hidden=false}else{history.forEach(m=>add(m.role,m.content));chips.hidden=true}}
+renderHistory();
+input.addEventListener("input",function(){this.style.height="auto";this.style.height=Math.min(this.scrollHeight,120)+"px"});input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});sendBtn.addEventListener("click",send);chips.addEventListener("click",e=>{const c=e.target.closest(".chip");if(!c||busy)return;input.value=c.dataset.q||"";send()});clearBtn.addEventListener("click",()=>{if(busy)return;history=[];try{localStorage.removeItem(HISTORY);conversationId=uid();localStorage.setItem(CID,conversationId)}catch{}window.FinViz.close();renderHistory();input.focus()});
+for(const btn of document.querySelectorAll(".nav-item")){btn.addEventListener("click",()=>{document.querySelectorAll(".nav-item").forEach(x=>x.classList.remove("active"));btn.classList.add("active");const view=btn.dataset.view;if(view==="chat")window.FinViz.close();else{setState("visualizing");heroSpeech.innerHTML="<strong>Glasses on ✦</strong><span>I pulled up the chalkboard for you.</span>";window.FinViz.fallback(view,btn.textContent.trim(),"Ask me a question about this area and I’ll fill the board with your live Notion data.")}})}
+async function send(){const text=input.value.trim();if(!text||busy)return;busy=true;input.disabled=sendBtn.disabled=true;add("user",text);remember("user",text);chips.hidden=true;input.value="";input.style.height="auto";typing.classList.add("visible");setState("thinking");heroSpeech.innerHTML="<strong>One sec…</strong><span>I’m checking your planner and doing the math.</span>";const requestId=uid();let assistant="",lastViz=null;
+try{const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:history,timezone:tz(),conversationId,clientId:conversationId,memoryKey:conversationId,requestId})});if(!r.ok){let msg=`Fin returned ${r.status}`;try{const j=await r.json();msg=j.error||j.message||msg}catch{}throw new Error(msg)}if(!r.body)throw new Error("Fin returned an empty response.");const bubble=document.createElement("div");bubble.className="message assistant-message";messagesEl.appendChild(bubble);const reader=r.body.getReader(),decoder=new TextDecoder();let buffer="",done=false;
+const append=chunk=>{if(!chunk)return;assistant+=chunk;renderRich(bubble,assistant);typing.classList.remove("visible");setState("talking");heroSpeech.innerHTML="<strong>I’ve got it.</strong><span>I’m walking through it with you now. ♡</span>";messagesEl.scrollTop=messagesEl.scrollHeight};
+while(!done){const part=await reader.read();if(part.done){buffer+=decoder.decode();const p=parseSse(buffer+"\n\n");handleEvents(p.events,append,v=>{lastViz=v},a=>handleAnimation(a));break}buffer+=decoder.decode(part.value,{stream:true});const p=parseSse(buffer);buffer=p.buffer;done=handleEvents(p.events,append,v=>{lastViz=v},a=>handleAnimation(a))}
+if(!assistant.trim())throw new Error("Fin didn’t return any text.");remember("assistant",assistant.trim());if(lastViz){setState("visualizing");heroSpeech.innerHTML="<strong>Chalkboard time ✦</strong><span>I opened the visual breakdown on the right.</span>";window.FinViz.render(lastViz,assistant)}else{fallbackVisualization(text,assistant)}if(/Saved to Notion:[\s\S]*Income:|Income:[\s\S]*(saved|added)|income.+saved/i.test(assistant))incomeCelebration();else if(/Saved to Notion:/i.test(assistant))notionSuccess();}
+catch(err){console.error(err);add("assistant","I couldn’t reach my notes just then. Your message is still here, so you can try again.");heroSpeech.innerHTML="<strong>Hmm…</strong><span>My spellbook didn’t connect. Try that once more?</span>"}finally{typing.classList.remove("visible");if(!document.getElementById("app-shell").classList.contains("insight-open"))setState("idle");busy=false;input.disabled=sendBtn.disabled=false;input.focus()}}
+function handleAnimation(a){const t=String(a?.type||a||"").toLowerCase();if(t.includes("income"))incomeCelebration();else if(t.includes("success")||t.includes("saved"))notionSuccess()}
+function handleEvents(events,append,setViz,animate){for(const data of events){if(data==="[DONE]")return true;try{const j=JSON.parse(data);if(j.visualization)setViz(j.visualization);if(j.animation)animate(j.animation);if(j.event==="visualization"&&j.data)setViz(j.data);const c=typeof j.response==="string"?j.response:j.choices?.[0]?.delta?.content||j.content||"";if(c)append(c)}catch{}}return false}
+function parseSse(buffer){let s=buffer.replace(/\r/g,""),events=[],i;while((i=s.indexOf("\n\n"))!==-1){const raw=s.slice(0,i);s=s.slice(i+2);const lines=raw.split("\n").filter(x=>x.startsWith("data:")).map(x=>x.slice(5).trimStart());if(lines.length)events.push(lines.join("\n"))}return{events,buffer:s}}
+function fallbackVisualization(question,answer){const q=question.toLowerCase();let type=null,title=null;if(/spend|budget|month|week|afford/.test(q)){type="spending";title="Spending breakdown"}else if(/bill|due|expense/.test(q)){type="bills";title="Bills"}else if(/sav|goal|japan|trip/.test(q)){type="savings";title="Savings progress"}else if(/income|paid|paycheck|wage|tip/.test(q)){type="income";title="Income"}else if(/progress|how am i doing/.test(q)){type="progress";title="Your progress"}if(type){setState("visualizing");heroSpeech.innerHTML="<strong>Chalkboard time ✦</strong><span>I opened a visual companion to my answer.</span>";window.FinViz.fallback(type,title,answer)}}
+function add(role,content){const el=document.createElement("div");el.className=`message ${role}-message`;if(role==="assistant")renderRich(el,content);else{const p=document.createElement("p");p.textContent=content;el.appendChild(p)}messagesEl.appendChild(el);messagesEl.scrollTop=messagesEl.scrollHeight}
+function renderRich(box,src){box.replaceChildren();let list=null,type=null;const end=()=>{list=null;type=null};for(const raw of String(src).replace(/\r/g,"").split("\n")){const t=raw.trim();if(!t){end();continue}if(t==="---"){end();const d=document.createElement("div");d.className="divider";box.appendChild(d);continue}if(t.startsWith("### ")){end();const h=document.createElement("h3");inline(h,t.slice(4));box.appendChild(h);continue}if(t.startsWith("#### ")){end();const h=document.createElement("h4");inline(h,t.slice(5));box.appendChild(h);continue}let m=t.match(/^[-•]\s+(.+)$/);if(m){if(!list||type!=="ul"){list=document.createElement("ul");type="ul";box.appendChild(list)}const li=document.createElement("li");inline(li,m[1]);list.appendChild(li);continue}m=t.match(/^\d+[.)]\s+(.+)$/);if(m){if(!list||type!=="ol"){list=document.createElement("ol");type="ol";box.appendChild(list)}const li=document.createElement("li");inline(li,m[1]);list.appendChild(li);continue}m=t.match(/^(TIP|NOTE|WATCH|HEADS UP):\s*(.+)$/i);if(m){end();const c=document.createElement("div");c.className="callout"+(/WATCH|HEADS UP/i.test(m[1])?" warn":"");const tt=document.createElement("span");tt.className="callout-title";tt.textContent=m[1];const b=document.createElement("div");inline(b,m[2]);c.append(tt,b);box.appendChild(c);continue}end();const p=document.createElement("p");inline(p,t);box.appendChild(p)}}
+function inline(parent,text){const re=/(\*\*[^*]+\*\*)/g;let last=0,m;while((m=re.exec(text))){if(m.index>last)parent.append(document.createTextNode(text.slice(last,m.index)));const s=document.createElement("strong");s.textContent=m[0].slice(2,-2);parent.append(s);last=m.index+m[0].length}if(last<text.length)parent.append(document.createTextNode(text.slice(last)))}
