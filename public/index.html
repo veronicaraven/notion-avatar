@@ -1,92 +1,81 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#2c2b22" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#1a241e" />
   <title>Fin</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Patrick+Hand&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Patrick+Hand&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
   <main class="app-shell" id="app-shell">
-    <aside class="nav-rail" aria-label="Fin navigation">
-      <div class="brand">
-        <div class="brand-title">Fin<span>❧</span></div>
-        <div class="brand-sub">your friendly<br>finance familiar ♡</div>
+    <section class="workspace">
+      <div class="ambient-room" aria-hidden="true">
+        <div class="window"><span class="moon"></span><i></i><i></i><i></i></div>
+        <div class="shelf shelf-a"></div><div class="shelf shelf-b"></div>
+        <div class="vine vine-a"></div><div class="vine vine-b"></div>
+        <div class="lantern"></div><div class="desk"></div>
+        <span class="spark sp1"></span><span class="spark sp2"></span><span class="spark sp3"></span>
       </div>
-      <nav class="nav-list">
-        <button class="nav-item active" data-view="chat"><span>◌</span>Chat</button>
-        <button class="nav-item" data-view="spending"><span>▥</span>Spending</button>
-        <button class="nav-item" data-view="bills"><span>▣</span>Bills</button>
-        <button class="nav-item" data-view="savings"><span>❧</span>Savings</button>
-        <button class="nav-item" data-view="income"><span>◎</span>Income</button>
-        <button class="nav-item" data-view="planner"><span>▤</span>Planner</button>
-      </nav>
-      <div class="nav-note">Small<br>steps<br>brighter<br>days ♡</div>
-    </aside>
 
-    <section class="conversation-column">
-      <section class="hero-scene" aria-label="Fin's magical study">
-        <img class="hero-base" src="/hero-base.png" alt="" aria-hidden="true" />
-
-        <div class="fin-wrap" id="fin-wrap" data-state="idle" aria-hidden="true">
-          <img class="fin-art" src="/fin.png" alt="" />
-          <span class="eye-lid eye-left"></span>
-          <span class="eye-lid eye-right"></span>
-          <span class="wand-glow"></span>
-          <span class="spark spark-a"></span>
-          <span class="spark spark-b"></span>
-          <span class="spark spark-c"></span>
-        </div>
-
-        <div class="book-wrap" id="book-wrap" aria-hidden="true">
-          <img class="book-art" src="/book.png" alt="" />
-          <span class="page page-one"></span>
-          <span class="page page-two"></span>
-          <span class="book-glow"></span>
-        </div>
-
-        <div class="hero-speech" id="hero-speech">
+      <section class="fin-zone" aria-label="Fin">
+        <div class="brand-lockup"><span class="brand">Fin</span><small>your friendly finance familiar ♡</small></div>
+        <div class="fin-reaction" id="fin-reaction" aria-live="polite">
           <strong>Hi there! I’m Fin.</strong>
-          <span>Tell me what’s on your mind, and we’ll make sense of it together. ♡</span>
+          <span>What’s on your mind?</span>
         </div>
+        <div class="fin-stage" id="fin-stage" data-state="idle" aria-hidden="true">
+          <img class="fin-art" src="/fin.png" alt="" />
+          <span class="blink blink-left"></span><span class="blink blink-right"></span>
+          <span class="wand-glow"></span>
+        </div>
+        <div class="book-stage" id="book-stage" aria-hidden="true">
+          <img src="/book.png" alt="" class="book-art" />
+          <span class="page-flip pf1"></span><span class="page-flip pf2"></span><span class="page-flip pf3"></span>
+        </div>
+        <div class="status-whisper" id="status-whisper">Ready when you are ✦</div>
       </section>
 
-      <section class="chat-card">
-        <div class="chat-toolbar">
-          <div class="chat-heading"><span class="mini-fin">✦</span> Chat with Fin</div>
-          <button id="clear-chat" class="ghost-button" type="button">+ New conversation</button>
-        </div>
+      <section class="conversation-zone">
+        <header class="conversation-header">
+          <div>
+            <span class="eyebrow">Conversation</span>
+            <h1>Talk to Fin</h1>
+          </div>
+          <button id="clear-chat" class="quiet-button" type="button">New conversation</button>
+        </header>
 
-        <div id="chat-messages" class="messages" aria-live="polite"></div>
-        <div id="typing-indicator" class="typing-indicator">Fin is checking your planner…</div>
+        <div class="messages" id="chat-messages" aria-live="polite"></div>
+        <div class="typing-indicator" id="typing-indicator">Fin is checking your planner…</div>
 
         <div class="quick-actions" id="chips">
-          <button class="chip" data-q="I bought something">I bought something</button>
-          <button class="chip" data-q="I got paid">I got paid</button>
-          <button class="chip" data-q="I'm saving for something">I’m saving for…</button>
-          <button class="chip" data-q="What are my bills?">What are my bills?</button>
-          <button class="chip" data-q="Show my progress">Show my progress</button>
+          <button class="chip" data-q="How is my spending this month?">How’s my spending?</button>
+          <button class="chip" data-q="What bills are coming up?">What bills are coming up?</button>
+          <button class="chip" data-q="How are my savings goals going?">How are my goals?</button>
+          <button class="chip" data-q="Show me my Budget Plan and help me decide what I can spend.">Help me budget</button>
         </div>
 
-        <div class="composer">
-          <textarea id="user-input" rows="1" placeholder="Tell me anything… a purchase, income, goal, or question…"></textarea>
+        <div class="composer-wrap">
+          <textarea id="user-input" rows="1" placeholder="Ask Fin anything…"></textarea>
           <button id="send-button" type="button" aria-label="Send message">➤</button>
         </div>
-        <div class="footer-note">Small steps. Brighter days. ♡</div>
+        <p class="composer-note">Purchases, income, bills, savings goals, or anything you want to understand.</p>
       </section>
     </section>
 
-    <aside class="insight-panel" id="insight-panel" aria-label="Fin visualization" aria-hidden="true">
-      <button class="close-insight" id="close-insight" aria-label="Close visualization">×</button>
-      <div id="visualization-root"></div>
+    <aside class="artifact-panel" id="insight-panel" aria-hidden="true">
+      <header class="artifact-header">
+        <div><span class="artifact-eyebrow">Fin’s visual</span><strong id="artifact-title">Breakdown</strong></div>
+        <button id="close-insight" class="artifact-close" type="button" aria-label="Close visualization">×</button>
+      </header>
+      <div id="visualization-root" class="visualization-root"></div>
     </aside>
   </main>
 
-  <script src="visualizations.js"></script>
-  <script src="chat.js"></script>
+  <script src="/visualizations.js"></script>
+  <script src="/chat.js"></script>
 </body>
 </html>
