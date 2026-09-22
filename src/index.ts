@@ -210,7 +210,12 @@ function chooseVisualization(message: string, s: any): Visualization | null {
 	const week = s?.this_week ?? {};
 	const weekly = s?.weekly_budget ?? {};
 
-	if (/spend|spent|purchase|bought|category|month/.test(q) && /how|show|breakdown|doing|much|where|month|spend/.test(q)) {
+	// Only open the artifact/sidebar when the user is asking to understand,
+	// compare, inspect, or plan. Simple logging statements like
+	// "I got paid $1,200" or "I bought coffee" should stay conversational.
+	const visualIntent = /\b(show|visual|chart|graph|breakdown|overview|compare|how|what|which|where|progress|help me budget|can i|could i|room|left|afford)\b/.test(q);
+
+	if (visualIntent && /spend|spent|purchase|bought|category|month|week/.test(q)) {
 		return {
 			type: "spending",
 			title: `${month.label ?? "This month"} spending`,
@@ -226,7 +231,7 @@ function chooseVisualization(message: string, s: any): Visualization | null {
 		};
 	}
 
-	if (/bill|rent|subscription|due|payment/.test(q)) {
+	if (visualIntent && /bill|rent|subscription|due|payment/.test(q)) {
 		return {
 			type: "bills",
 			title: "Bills & due dates",
@@ -240,21 +245,26 @@ function chooseVisualization(message: string, s: any): Visualization | null {
 		};
 	}
 
-	if (/sav|goal|trip|japan|progress/.test(q) && Array.isArray(s?.savings_goals) && s.savings_goals.length) {
+	if (visualIntent && /sav|goal|trip|japan|progress/.test(q) && Array.isArray(s?.savings_goals) && s.savings_goals.length) {
 		const words = q.split(/\W+/).filter((x: string) => x.length > 2);
 		const goal = s.savings_goals.find((g: any) => words.some((w: string) => String(g.goal).toLowerCase().includes(w))) ?? s.savings_goals[0];
 		return { type: "savings", title: goal.goal, subtitle: "Savings goal", data: goal };
 	}
 
-	if (/income|paid|paycheck|earned|tips|wages/.test(q)) {
+	if (visualIntent && /income|paid|paycheck|earned|tips|wages/.test(q)) {
 		return {
 			type: "income",
 			title: "Income",
-			data: { month: month.income_logged ?? 0, week: week.income_logged ?? 0, sources: month.income_by_source ?? {}, recent: s?.recent_incomes ?? [] },
+			data: {
+				month: month.income_logged ?? 0,
+				week: week.income_logged ?? 0,
+				sources: month.income_by_source ?? {},
+				recent: s?.recent_incomes ?? [],
+			},
 		};
 	}
 
-	if (/afford|room|left|budget|can i buy|can i spend/.test(q)) {
+	if (/afford|room|left|budget|can i buy|can i spend|help me budget/.test(q)) {
 		return {
 			type: "room",
 			title: "Room in the plan",
