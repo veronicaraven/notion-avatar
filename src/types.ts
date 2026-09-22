@@ -32,6 +32,9 @@ export interface Env {
 	/** Optional Cloudflare KV binding. Binding name must be FIN_MEMORY. */
 	FIN_MEMORY?: KvBinding;
 
+	/** Optional override. If omitted, Fin discovers the Notion data source titled "Budget Plan". */
+	BUDGET_PLAN_DATA_SOURCE_ID?: string;
+
 	/** Set to "true" only when you intentionally want /api/notion/test exposed. */
 	ENABLE_DIAGNOSTICS?: string;
 }

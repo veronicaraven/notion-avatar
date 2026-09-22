@@ -13,6 +13,14 @@ export interface NotionPage {
 	properties: Record<string, any>;
 }
 
+export interface NotionDataSource {
+	object?: string;
+	id: string;
+	title?: Array<{ plain_text?: string; text?: { content?: string } }>;
+	name?: string;
+	url?: string;
+}
+
 export class NotionError extends Error {
 	status: number;
 	constructor(status: number, message: string) {
@@ -57,6 +65,32 @@ async function call(
 }
 
 /** Query a data source, following pagination up to `maxPages` (100 rows each). */
+/** Search data sources shared with the Notion connection by title. */
+export async function searchDataSourcesByTitle(
+	env: Env,
+	query: string,
+): Promise<NotionDataSource[]> {
+	const data = await call(env, "/search", "POST", {
+		query,
+		page_size: 50,
+		filter: { property: "object", value: "data_source" },
+		sort: { direction: "descending", timestamp: "last_edited_time" },
+	});
+	return (data.results ?? []) as NotionDataSource[];
+}
+
+/** Best-effort readable title for a data source returned from /search. */
+export function dataSourceTitle(ds: NotionDataSource): string {
+	if (typeof ds.name === "string" && ds.name.trim()) return ds.name.trim();
+	if (Array.isArray(ds.title)) {
+		return ds.title
+			.map((part) => part?.plain_text ?? part?.text?.content ?? "")
+			.join("")
+			.trim();
+	}
+	return "";
+}
+
 export async function queryAll(
 	env: Env,
 	dataSourceId: string,

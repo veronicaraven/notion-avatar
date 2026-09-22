@@ -42,7 +42,8 @@ FINANCIAL INTERPRETATION
 - "cash flow so far" means logged income minus paid bills minus logged purchases.
 - "flexible left after all month bills" additionally reserves unpaid bills due this month.
 - Prefer values already computed in the snapshot rather than doing mental arithmetic.
-- For affordability questions, consider weekly room, unpaid/soon-due bills, and planned purchases.
+- For affordability questions, consider the live Budget Plan first when it has relevant rows, then weekly room, unpaid/soon-due bills, savings goals, and planned purchases.
+- BUDGET PLAN is the user's explicit spending plan in Notion. Compare actual purchases against it when helping with budgeting, and call out categories that are near/over plan without shaming.
 - Mention uncertainty or missing Notion data rather than guessing.
 
 TONE
@@ -117,7 +118,9 @@ async function handleNotionTest(env: Env, url: URL): Promise<Response> {
 				expenses: data.expenses.length,
 				incomes: data.incomes.length,
 				savings_goals: data.savings.length,
+				budget_plan: data.budgetPlan.length,
 			},
+			budget_plan_data_source_id: data.budgetPlanSourceId,
 			problems: data.errors,
 		};
 		if (url.searchParams.has("snapshot")) body.snapshot = buildSnapshot(data, today, true);
@@ -260,6 +263,7 @@ function chooseVisualization(message: string, s: any): Visualization | null {
 				perDay: weekly.per_day_rest_of_week ?? 0,
 				flexibleMonth: month.flexible_left_after_all_month_bills ?? month.flexible_money_left_after_unpaid_bills ?? 0,
 				planned: s?.planned_purchases ?? [],
+				budgetPlan: s?.budget_plan ?? null,
 			},
 		};
 	}

@@ -4,7 +4,15 @@
  * AI never has to do math in its head.
  */
 import type { Env } from "./types";
-import { NotionError, plain, queryAll, titleOf, type NotionPage } from "./notion";
+import {
+	dataSourceTitle,
+	NotionError,
+	plain,
+	queryAll,
+	searchDataSourcesByTitle,
+	titleOf,
+	type NotionPage,
+} from "./notion";
 
 /* ------------------------------------------------------------------ */
 /* Your Notion databases (data source IDs, found in your Financial Planner) */
@@ -241,6 +249,8 @@ export interface FinanceData {
 	weeks: NotionPage[];
 	savings: NotionPage[];
 	debts: NotionPage[];
+	budgetPlan: NotionPage[];
+	budgetPlanSourceId: string | null;
 	/** Human-readable problems, e.g. a database the integration can't see. */
 	errors: string[];
 }
@@ -279,13 +289,31 @@ export async function loadFinanceData(env: Env, today: string): Promise<FinanceD
 
 	const recent = [{ timestamp: "created_time", direction: "descending" }];
 
+	// Budget Plan is intentionally discovered by title so a newly-created database
+	// can be picked up without another hard-coded ID. An env var can override this.
+	let budgetPlanSourceId = env.BUDGET_PLAN_DATA_SOURCE_ID?.trim() || null;
+	if (!budgetPlanSourceId) {
+		try {
+			const matches = await searchDataSourcesByTitle(env, "Budget Plan");
+			const exact = matches.find((ds) => dataSourceTitle(ds).trim().toLowerCase() === "budget plan");
+			budgetPlanSourceId = (exact ?? matches[0])?.id ?? null;
+			if (!budgetPlanSourceId) {
+				errors.push(
+					'Budget Plan: no shared Notion data source titled "Budget Plan" was found. Open that database in Notion and add the same integration/connection Fin uses.',
+				);
+			}
+		} catch (e) {
+			errors.push(`Budget Plan discovery: ${explain(e)}`);
+		}
+	}
+
 	/*
 	 * Accuracy rule: do not filter purchases/incomes by their Notion Date property
 	 * before reading them. Some rows may have a blank Date even though readPurchase
 	 * and readIncome can safely fall back to created_time. Filtering too early makes
 	 * valid rows disappear and can falsely produce $0 totals.
 	 */
-	const [purchases, expenses, incomes, categories, months, weeks, savings, debts] =
+	const [purchases, expenses, incomes, categories, months, weeks, savings, debts, budgetPlan] =
 		await Promise.all([
 			run("What I Bought Today", queryAll(env, DS.purchases, { sorts: recent, maxPages: 5 })),
 			run("Expenses", queryAll(env, DS.expenses, { maxPages: 3 })),
@@ -295,9 +323,24 @@ export async function loadFinanceData(env: Env, today: string): Promise<FinanceD
 			run("Week", queryAll(env, DS.weeks, { sorts: recent, maxPages: 2 })),
 			run("Saving For Something Big", queryAll(env, DS.savings, { maxPages: 2 })),
 			run("Debt Tracker", queryAll(env, DS.debts, { maxPages: 2 })),
+			budgetPlanSourceId
+				? run("Budget Plan", queryAll(env, budgetPlanSourceId, { maxPages: 3 }))
+				: Promise.resolve([]),
 		]);
 
-	return { purchases, expenses, incomes, categories, months, weeks, savings, debts, errors };
+	return {
+		purchases,
+		expenses,
+		incomes,
+		categories,
+		months,
+		weeks,
+		savings,
+		debts,
+		budgetPlan,
+		budgetPlanSourceId,
+		errors,
+	};
 }
 
 /* ---------------- The snapshot Fin reads before every reply ---------------- */
@@ -315,6 +358,95 @@ function groupSum(items: Purchase[]): Record<string, number> {
 	const out: Record<string, number> = {};
 	for (const p of items) out[p.category] = r2((out[p.category] ?? 0) + p.amount);
 	return out;
+}
+
+function flattenProperties(page: NotionPage): Record<string, unknown> {
+	const out: Record<string, unknown> = {};
+	for (const [name, prop] of Object.entries(page.properties ?? {})) {
+		const value = plain(prop);
+		if (value !== null && value !== "" && !(Array.isArray(value) && value.length === 0)) {
+			out[name] = value;
+		}
+	}
+	return out;
+}
+
+function normPropertyName(value: string): string {
+	return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function findPropertyValue(
+	props: Record<string, unknown>,
+	candidates: string[],
+): unknown {
+	const entries = Object.entries(props).map(([name, value]) => [normPropertyName(name), value] as const);
+	for (const candidate of candidates.map(normPropertyName)) {
+		const exact = entries.find(([name]) => name === candidate);
+		if (exact) return exact[1];
+	}
+	for (const candidate of candidates.map(normPropertyName)) {
+		const fuzzy = entries.find(([name]) => name.includes(candidate) || candidate.includes(name));
+		if (fuzzy) return fuzzy[1];
+	}
+	return null;
+}
+
+function numberish(value: unknown): number | null {
+	if (typeof value === "number" && Number.isFinite(value)) return value;
+	if (typeof value === "string") {
+		const cleaned = value.replace(/[$,%\s,]/g, "");
+		if (cleaned && Number.isFinite(Number(cleaned))) return Number(cleaned);
+	}
+	return null;
+}
+
+function budgetPlanSnapshot(rows: NotionPage[], monthPurchases: Purchase[]) {
+	const purchaseByCategory = groupSum(monthPurchases);
+	const normalizedSpend = new Map(
+		Object.entries(purchaseByCategory).map(([name, amount]) => [normPropertyName(name), amount]),
+	);
+
+	const items = rows.map((page) => {
+		const properties = flattenProperties(page);
+		const name = titleOf(page) || String(findPropertyValue(properties, ["Category", "Name", "Budget Item", "Item"]) ?? "Budget item");
+		const planned = numberish(findPropertyValue(properties, [
+			"Budget", "Budget Amount", "Planned", "Planned Amount", "Limit", "Monthly Budget", "Target",
+		]));
+		const notionSpent = numberish(findPropertyValue(properties, [
+			"Spent", "Spending", "Actual", "Actual Spend", "This Month", "Used",
+		]));
+		const categorySpend = normalizedSpend.get(normPropertyName(name));
+		const spent = notionSpent ?? categorySpend ?? null;
+		const notionRemaining = numberish(findPropertyValue(properties, [
+			"Remaining", "Left", "Available", "Left to Spend", "Balance",
+		]));
+		const remaining = notionRemaining ?? (planned !== null && spent !== null ? r2(planned - spent) : null);
+		const period = findPropertyValue(properties, ["Month", "Period", "Date"]);
+		const notes = findPropertyValue(properties, ["Notes", "Note", "Description"]);
+		return {
+			name,
+			planned,
+			spent,
+			remaining,
+			period,
+			notes,
+			properties,
+		};
+	});
+
+	const numericPlanned = items.map((x) => x.planned).filter((x): x is number => x !== null);
+	const numericSpent = items.map((x) => x.spent).filter((x): x is number => x !== null);
+	const numericRemaining = items.map((x) => x.remaining).filter((x): x is number => x !== null);
+
+	return {
+		available: rows.length > 0,
+		rows: items,
+		totals: {
+			planned: numericPlanned.length ? sum(numericPlanned) : null,
+			spent: numericSpent.length ? sum(numericSpent) : null,
+			remaining: numericRemaining.length ? sum(numericRemaining) : null,
+		},
+	};
 }
 
 export function buildSnapshot(data: FinanceData, today: string, includeNotionCalcs: boolean) {
@@ -414,6 +546,8 @@ export function buildSnapshot(data: FinanceData, today: string, includeNotionCal
 		notion_spending: plain(c.properties["Spending"]),
 	}));
 
+	const budgetPlan = budgetPlanSnapshot(data.budgetPlan, monthPurchases);
+
 	/* --- savings + debts --- */
 	const savings = data.savings.map((s) => {
 		const target = num(plain(s.properties["Target Amount"]));
@@ -463,6 +597,7 @@ export function buildSnapshot(data: FinanceData, today: string, includeNotionCal
 			purchase_rows_counted_this_month: monthPurchases.length,
 			income_rows_loaded: incomes.length,
 			expense_rows_loaded: bills.length,
+			budget_plan_rows_loaded: data.budgetPlan.length,
 		},
 		this_week: {
 			label: weekInfo?.title ?? `${range.start} to ${range.end}`,
@@ -537,6 +672,11 @@ export function buildSnapshot(data: FinanceData, today: string, includeNotionCal
 			unpaid_count: unpaid.length,
 		},
 		planned_purchases: planned,
+		budget_plan: {
+			...budgetPlan,
+			data_source_id: data.budgetPlanSourceId,
+			note: "This is the user-defined Budget Plan from Notion. Use it as the primary plan for spending guidance when it contains relevant rows.",
+		},
 		budget_categories: categories,
 		savings_goals: savings,
 		debts: {
